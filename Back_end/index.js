@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require("cors");
 const connectDB = require("./db");
 const register = require("./routes/register.js");
+const login = require("./routes/login.js");
 
 const app = express();
 
@@ -9,6 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/", register);
+app.use("/", login);
 
 connectDB();
 

@@ -2,31 +2,31 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [email0phone, setEmail0phone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!email0phone || !password) {
       setError("Please fill in all fields.");
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("http://localhost:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email0phone, password }),
       });
-      const data = await res.json();
+      const data = await res.json();        //backend should return role in res
       if (!res.ok) {
         setError(data.message || "Login failed.");
         return;
       }
       localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-      if (data.role === "farmer") navigate("/farmer/dashboard");
-      else if (data.role === "admin") navigate("/admin/dashboard");
+      localStorage.setItem("role", data.role);        
+      if (data.role === "1") navigate("/farmer/dashboard");
+      else if (data.role === "2") navigate("/consumer/dashboard");
       else navigate("/");
     } catch {
       setError("Server error. Please try again.");
@@ -181,13 +181,13 @@ function Login() {
                 letterSpacing: "0.5px",
               }}
             >
-              Email address
+              Email address or Phone 
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              type="text"
+              value={email0phone}
+              onChange={(e) => setEmail0phone(e.target.value)}
+              placeholder="email or phone"
               style={{
                 width: "100%",
                 padding: "10px 14px",
