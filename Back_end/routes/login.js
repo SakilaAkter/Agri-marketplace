@@ -18,7 +18,7 @@ router.post("/login", async (req, res) => {
             [email0phone, email0phone]
         ); 
         if (rows.length == 0) {
-            return res.status(409).json({ message: "User doesn't exists" });
+            return res.status(409).json({ message: "User doesn't exist" });
         } 
 
         const user = rows[0];

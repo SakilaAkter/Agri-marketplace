@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 function Register() {
   const [role, setRole] = useState("1");
-//  const [consumerType, setConsumerType] = useState("");
+  const [consumerType, setConsumerType] = useState("");
   const [form, setForm] = useState({
     user_name: "",
     phone: "",
@@ -44,7 +44,7 @@ function Register() {
       const res = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, role_id: role}),
+        body: JSON.stringify({ ...form, role_id: role, consumerType}),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -262,7 +262,7 @@ function Register() {
             {/*roleBtn("admin", "Admin", "🛡️")*/}
           </div>
 
-          {/*role === "consumer" && (
+          {role === "2" && (
             <div style={{ marginBottom: "16px" }}>
               <label
                 style={{
@@ -279,7 +279,7 @@ function Register() {
               </label>
               <select
                 value={consumerType}
-                onChange={(e) => setConsumerType(e.target.value)}
+                onChange={(e) => setConsumerType((e.target.value))}
                 style={{
                   width: "100%",
                   padding: "10px 14px",
@@ -290,12 +290,12 @@ function Register() {
                 }}
               >
                 <option value="">Select type...</option>
-                <option>Individual</option>
-                <option>Restaurant</option>
-                <option>Grocery Shop</option>
+                <option value="1">Individual</option>
+                <option value="2">Restaurant</option>
+                <option value="3">Grocery Shop</option>
               </select>
             </div>
-          )*/}
+          )}
 
           {/* Form fields */}
           <div
