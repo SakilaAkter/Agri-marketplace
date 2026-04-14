@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 router.post("/register", async (req, res) => {
     const db = getDB();
 
-    const { user_name, phone, email, password, role_id, about , consumerType} = req.body;
+    const { user_name, phone, email, password, role_id, about , consumerType, masterPass} = req.body;
 
     if (!user_name || !phone || !password || !role_id) {
         return res.status(400).json({ message: "All fields required" });
@@ -38,14 +38,47 @@ console.log("Tables:", tableNames);
                 error: "Consumer type is required"
                 });
             }
+            else if(Number(consumerType)<1 || Number(consumerType)>3){
+                return res.status(400).json({
+                error: "Consumer type is not valid"
+                });
+            }
         }
 
-        await db.execute(
-            `INSERT INTO USERS_RENAMED_2  
-            (user_name, phone, email, password, role_id, about) 
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [user_name, phone, email, hashedPassword, role_id, about]
-        );
+        if(Number(role_id) === 3){
+            if (!masterPass || masterPass === "") {
+                return res.status(400).json({
+                error: "Master password is required"
+                });
+            }
+        }
+
+        if(Number(role_id) !== 3){
+            await db.execute(
+                `INSERT INTO USERS_RENAMED_2  
+                (user_name, phone, email, password, role_id, about) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [user_name, phone, email, hashedPassword, role_id, about]
+            );
+        }
+        else{
+            const [admin_pass] = await db.execute(
+                "SELECT * FROM master_p WHERE id = ?",
+                [1]
+            );
+            const master_passw = admin_pass[0];
+            const isMatch = await bcrypt.compare(masterPass, master_passw.master_pass);
+            if(!isMatch){
+                return res.status(401).json({message: "Master Password Incorrect"});
+            } else{
+                await db.execute(
+                `INSERT INTO USERS_RENAMED_2  
+                (user_name, phone, email, password, role_id, about) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [user_name, phone, email, hashedPassword, role_id, about]
+                );
+            }
+        }
 
         if(Number(role_id) === 2){
             const [bows] = await db.execute(

@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 function Register() {
   const [role, setRole] = useState("1");
   const [consumerType, setConsumerType] = useState("");
+  const [masterPass, setMasterPass] = useState("");
   const [form, setForm] = useState({
     user_name: "",
     phone: "",
@@ -36,6 +37,10 @@ function Register() {
       setError("Please fill in all fields.");
       return;
     }
+    if (role === 3 && (masterPass === "" || !masterPass)) {
+      setError("Please provide master password");
+      return;
+    }
     if (form.password !== form.confirm) {
       setError("Passwords do not match.");
       return;
@@ -44,7 +49,7 @@ function Register() {
       const res = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, role_id: role, consumerType}),
+        body: JSON.stringify({ ...form, role_id: role, consumerType, masterPass}),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -259,9 +264,44 @@ function Register() {
           <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
             {roleBtn("1", "Farmer", "👨‍🌾")}
             {roleBtn("2", "Consumer", "🛒")}
-            {/*roleBtn("admin", "Admin", "🛡️")*/}
+            {roleBtn("3", "Admin", "🛡️")}
           </div>
 
+          {/*special feature for admin*/}
+          {role === "3" && (
+            <div style={{ marginBottom: "16px" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  color: "#718096",
+                  marginBottom: "6px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Master Password
+              </label>
+
+              <input
+                type="password"
+                value={masterPass}
+                onChange={(e) => setMasterPass(e.target.value)}
+                placeholder="Enter admin master password"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  border: "0.5px solid #cbd5e0",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  background: "#f7fafc",
+                }}
+              />
+            </div>
+          )}
+
+            {/*special feature for consumer*/}
           {role === "2" && (
             <div style={{ marginBottom: "16px" }}>
               <label
