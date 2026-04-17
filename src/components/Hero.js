@@ -1,6 +1,8 @@
 import React from "react";
 
+import { useNavigate } from "react-router-dom";
 function Hero() {
+  const navigate = useNavigate();
   return (
     <div
       style={{ position: "relative", overflow: "hidden", minHeight: "420px" }}
@@ -80,6 +82,7 @@ function Hero() {
 
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <button
+            onClick={() => navigate("/products")}
             style={{
               padding: "12px 28px",
               background: "#38a169",
@@ -94,6 +97,7 @@ function Hero() {
             Explore Products
           </button>
           <button
+            onClick={() => navigate("/register")}
             style={{
               padding: "12px 28px",
               background: "transparent",

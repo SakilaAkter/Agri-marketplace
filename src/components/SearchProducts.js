@@ -1,9 +1,15 @@
 import React, { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 function SearchProducts() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
+  const handleSearch = () => {
+    navigate(
+      `/products?search=${query}&category=${category}&location=${location}`,
+    );
+  };
 
   return (
     <div

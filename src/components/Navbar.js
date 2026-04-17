@@ -95,6 +95,19 @@ function Navbar() {
         >
           Register
         </span>
+
+        <span
+          onClick={() => navigate("/profile")}
+          style={{
+            color: "#c8f0d8",
+            fontSize: "13px",
+            padding: "6px 14px",
+            borderRadius: "20px",
+            cursor: "pointer",
+          }}
+        >
+          Profile
+        </span>
       </div>
     </nav>
   );
