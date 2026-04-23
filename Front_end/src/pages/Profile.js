@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 const historyData = [
   { action: "Listed new product: Fresh Tomato", date: "Today, 10:24 AM" },
@@ -13,36 +15,129 @@ const historyData = [
 ];
 
 function Profile() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
-    name: "Rahim Karim",
-    phone: "01712345678",
-    email: "rahim@farm.com",
-    district: "Jessore",
+    name: "",
+    phone: "",
+    email: "",
+    about: "",
   });
+
+  const [role_name, setRole_name] = useState("");
+  const [productCount, setProductCount] = useState("");
+  const [orders, setOrders] = useState("");
+  const [memberSince, setMemberSince] = useState("");
+  const [activeDeals, setActiveDeals] = useState("");
+
   const [saved, setSaved] = useState(false);
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
   const [pwMsg, setPwMsg] = useState("");
+    //use hook
+    useEffect(() => {
+      const fetchProfile = async () => {
+          const token = localStorage.getItem("token");
+          if (!token) {
+              navigate("/login");
+              return;
+          }
+          try {
+              const res = await fetch(
+                  "http://localhost:3000/profile",
+                  {
+                      method: "GET",
+                      headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                      },
+                  }
+              );
+              if (!res.ok) {
+                  navigate("/login");
+                  return;
+              }
+              const data = await res.json();
+              setForm({
+                  name: data.user_name,
+                  phone: data.phone,
+                  email: data.email,
+                  about: data.about
+              });
+              setRole_name(data.role_name);
+              setOrders(data.orders);
+              setProductCount(data.product_count);
+              const dateOnly = new Date(data.date_added).toISOString().split("T")[0];
+              setMemberSince(dateOnly);
+              setActiveDeals(data.active_deal);
+
+          } catch (err) {
+              console.log(err);
+              navigate("/login");
+          }
+      };
+      fetchProfile();
+  }, []);
+
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const setPw = (k) => (e) => setPwForm({ ...pwForm, [k]: e.target.value });
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:3000/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          about: form.about,
+        }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.log(err);
+      alert("Failed to update profile");
+    }
   };
 
-  const handlePwUpdate = () => {
-    if (!pwForm.current || !pwForm.newPw || !pwForm.confirm) {
-      setPwMsg("Please fill all password fields.");
-      return;
-    }
-    if (pwForm.newPw !== pwForm.confirm) {
-      setPwMsg("New passwords do not match.");
-      return;
-    }
-    setPwMsg("Password updated successfully!");
-    setPwForm({ current: "", newPw: "", confirm: "" });
-    setTimeout(() => setPwMsg(""), 3000);
+  const handlePwUpdate = async () => {
+      if (!pwForm.current || !pwForm.newPw || !pwForm.confirm) {
+          setPwMsg("Please fill all password fields.");
+          return;
+      }
+      if (pwForm.newPw !== pwForm.confirm) {
+          setPwMsg("New passwords do not match.");
+          return;
+      }
+      try {
+          const token = localStorage.getItem("token");
+          const res = await fetch("http://localhost:3000/change-password", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                  current: pwForm.current,
+                  newPw: pwForm.newPw
+              })
+          });
+          const data = await res.json();
+          if (!res.ok) {
+              setPwMsg(data.message);
+              return;
+          }
+          setPwMsg("Password updated successfully!");
+          setPwForm({ current: "", newPw: "", confirm: "" });
+      } catch (err) {
+          setPwMsg("Server error");
+      }
   };
 
   const inputStyle = {
@@ -134,7 +229,7 @@ function Profile() {
                     color: "#065f46",
                   }}
                 >
-                  Farmer
+                  {role_name}
                 </span>
               </div>
               <div
@@ -145,7 +240,7 @@ function Profile() {
                   marginTop: "8px",
                 }}
               >
-                📍 {form.district}, Bangladesh
+                📍 {form.about}
               </div>
             </>,
           )}
@@ -164,10 +259,10 @@ function Profile() {
                 Account stats
               </div>
               {[
-                ["Products listed", "12"],
-                ["Orders received", "48"],
-                ["Active deals", "3"],
-                ["Member since", "Jan 2023"],
+                ["Products listed", productCount],
+                ["Orders received", orders],
+                ["Active deals", activeDeals],
+                ["Member since", memberSince],
               ].map(([label, val]) => (
                 <div
                   key={label}
@@ -246,7 +341,7 @@ function Profile() {
                   ["name", "Full name", "text"],
                   ["phone", "Phone number", "tel"],
                   ["email", "Email address", "email"],
-                  ["district", "District", "text"],
+                  ["about", "About", "text"],
                 ].map(([k, label, type]) => (
                   <div key={k}>
                     <label style={labelStyle}>{label}</label>
