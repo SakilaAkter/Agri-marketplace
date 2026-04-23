@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 function SearchProducts() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
+
   const handleSearch = () => {
     navigate(
       `/products?search=${query}&category=${category}&location=${location}`,
@@ -29,6 +31,7 @@ function SearchProducts() {
         placeholder="Search vegetables, fruits, grains..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         style={{
           padding: "10px 16px",
           border: "1px solid #cbd5e0",
@@ -39,6 +42,7 @@ function SearchProducts() {
           outline: "none",
         }}
       />
+
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
@@ -54,7 +58,9 @@ function SearchProducts() {
         <option>Vegetables</option>
         <option>Fruits</option>
         <option>Grains</option>
+        <option>Spices</option>
       </select>
+
       <select
         value={location}
         onChange={(e) => setLocation(e.target.value)}
@@ -74,7 +80,9 @@ function SearchProducts() {
         <option>Bogura</option>
         <option>Dinajpur</option>
       </select>
+
       <button
+        onClick={handleSearch}
         style={{
           background: "#2f855a",
           color: "white",
