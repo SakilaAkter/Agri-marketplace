@@ -42,6 +42,8 @@ function Products() {
   const location = useLocation();
 
   const [allProducts, setAllProducts] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const params = new URLSearchParams(location.search);
   const initSearch = params.get("search") || "";
@@ -87,6 +89,34 @@ function Products() {
     };
 
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/locations");
+        const data = await res.json();
+        setLocations(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+    useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/categories");
+        const data = await res.json();
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLocations();
   }, []);
 
   const toggleTrend = (t) =>
@@ -184,10 +214,14 @@ function Products() {
           }}
         >
           <option value="">All categories</option>
-          <option>Vegetables</option>
-          <option>Fruits</option>
-          <option>Grains</option>
-          <option>Spices</option>
+          {categories.map((loc) => (
+            <option
+              key={loc.category_id}
+              value={loc.category_name}
+            >
+              {loc.category_name}
+            </option>
+          ))}
         </select>
         <select
           value={locFilter}
@@ -201,12 +235,15 @@ function Products() {
           }}
         >
           <option value="">All locations</option>
-          <option>Jessore</option>
-          <option>Rangpur</option>
-          <option>Pabna</option>
-          <option>Bogura</option>
-          <option>Dinajpur</option>
-          <option>Khulna</option>
+
+          {locations.map((loc) => (
+            <option
+              key={loc.location_id}
+              value={loc.location_name}
+            >
+              {loc.location_name}
+            </option>
+          ))}
         </select>
         <select
           value={sort}

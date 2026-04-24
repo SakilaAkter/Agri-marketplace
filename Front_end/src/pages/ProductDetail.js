@@ -1,250 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-
-const products = [
-  {
-    id: 1,
-    name: "Fresh Tomato",
-    price: 20,
-    unit: "kg",
-    location: "Jessore",
-    farmer: "Rahim Farm",
-    farmerInitials: "RF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "up",
-    trendPct: "+12%",
-    aiHint: "Price rising due to low supply this week — buy now.",
-    stock: 240,
-    minOrder: 5,
-    discount: "5% off 50kg+",
-    listed: "Jan 10, 2026",
-    desc: "Farm-fresh tomatoes grown organically in Jessore. Harvested daily and delivered directly to buyers. No pesticides used.",
-    img: "https://images.unsplash.com/photo-1561136594-7f68413baa99?w=600&q=80",
-  },
-  {
-    id: 2,
-    name: "Potato",
-    price: 15,
-    unit: "kg",
-    location: "Rangpur",
-    farmer: "Karim Farm",
-    farmerInitials: "KF",
-    category: "Vegetables",
-    badge: null,
-    trend: "down",
-    trendPct: "-8%",
-    aiHint: "Price dropping — good time to stock up in bulk.",
-    stock: 500,
-    minOrder: 10,
-    discount: "None",
-    listed: "Jan 8, 2026",
-    desc: "High quality potatoes from Rangpur. Ideal for restaurants and grocery shops. Freshly dug and cleaned.",
-    img: "https://images.unsplash.com/photo-1508313880080-c4bef0730395?w=600&q=80",
-  },
-  {
-    id: 3,
-    name: "Onion",
-    price: 25,
-    unit: "kg",
-    location: "Pabna",
-    farmer: "Hasan Farm",
-    farmerInitials: "HF",
-    category: "Vegetables",
-    badge: "Popular",
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Price has been stable for 2 weeks.",
-    stock: 180,
-    minOrder: 5,
-    discount: "10% off 100kg+",
-    listed: "Jan 5, 2026",
-    desc: "Fresh onions from Pabna. Our most popular product with consistent quality year-round.",
-    img: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&q=80",
-  },
-  {
-    id: 4,
-    name: "Cauliflower",
-    price: 30,
-    unit: "kg",
-    location: "Bogura",
-    farmer: "Salam Farm",
-    farmerInitials: "SF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "up",
-    trendPct: "+18%",
-    aiHint: "Seasonal demand rising — price may go up further.",
-    stock: 80,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 9, 2026",
-    desc: "Fresh cauliflower picked this morning from Bogura farms. Perfect for restaurants and bulk buyers.",
-    img: "https://images.unsplash.com/photo-1510627498534-cf7e9002facc?w=600&q=80",
-  },
-  {
-    id: 5,
-    name: "Carrot",
-    price: 35,
-    unit: "kg",
-    location: "Dinajpur",
-    farmer: "Ali Farm",
-    farmerInitials: "AF",
-    category: "Vegetables",
-    badge: null,
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Steady supply from Dinajpur keeps price consistent.",
-    stock: 120,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 7, 2026",
-    desc: "Sweet crunchy carrots from Dinajpur. Great for bulk buyers, restaurants, and juice bars.",
-    img: "https://images.unsplash.com/photo-1445282768818-728615cc910a?w=600&q=80",
-  },
-  {
-    id: 6,
-    name: "Rice (Aman)",
-    price: 55,
-    unit: "kg",
-    location: "Sylhet",
-    farmer: "Mia Farm",
-    farmerInitials: "MF",
-    category: "Grains",
-    badge: "Seasonal",
-    trend: "up",
-    trendPct: "+22%",
-    aiHint: "Post-harvest price rising fast — secure stock now.",
-    stock: 1000,
-    minOrder: 20,
-    discount: "3% off 200kg+",
-    listed: "Dec 20, 2025",
-    desc: "Premium Aman rice from Sylhet. Seasonal harvest with limited stock. Aromatic and high quality.",
-    img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&q=75",
-  },
-  {
-    id: 7,
-    name: "Green Pepper",
-    price: 40,
-    unit: "kg",
-    location: "Khulna",
-    farmer: "Alam Farm",
-    farmerInitials: "ALF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "down",
-    trendPct: "-5%",
-    aiHint: "Bumper harvest in Khulna pushing prices down.",
-    stock: 90,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 9, 2026",
-    desc: "Fresh green peppers from Khulna. Crisp and flavorful, ideal for salads and cooking.",
-    img: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=400&q=75",
-  },
-  {
-    id: 8,
-    name: "Garlic",
-    price: 80,
-    unit: "kg",
-    location: "Rajshahi",
-    farmer: "Islam Farm",
-    farmerInitials: "IF",
-    category: "Spices",
-    badge: null,
-    trend: "up",
-    trendPct: "+15%",
-    aiHint: "Import restrictions raising garlic prices nationwide.",
-    stock: 60,
-    minOrder: 2,
-    discount: "None",
-    listed: "Jan 6, 2026",
-    desc: "Premium quality garlic from Rajshahi. Strong aroma and flavor. Dry-cured for longer shelf life.",
-    img: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=600&q=80",
-  },
-  {
-    id: 9,
-    name: "Brinjal",
-    price: 18,
-    unit: "kg",
-    location: "Jessore",
-    farmer: "Dewan Farm",
-    farmerInitials: "DF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Consistent supply — price expected to hold.",
-    stock: 150,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 10, 2026",
-    desc: "Fresh brinjal picked daily from Jessore farms. Deep purple, firm and fresh.",
-    img: "https://images.pexels.com/photos/321551/pexels-photo-321551.jpeg?w=400&h=300&fit=crop",
-  },
-  {
-    id: 10,
-    name: "Orange",
-    price: 60,
-    unit: "kg",
-    location: "Khulna",
-    farmer: "Haque Farm",
-    farmerInitials: "HQF",
-    category: "Fruits",
-    badge: null,
-    trend: "down",
-    trendPct: "-10%",
-    aiHint:
-      "New harvest season dropping orange prices — good time to buy in bulk.",
-    stock: 200,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 8, 2026",
-    desc: "Sweet and juicy oranges from Khulna. High vitamin C content. Perfect for restaurants, juice producers and grocery shops.",
-    img: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?w=600&h=400&fit=crop",
-  },
-  {
-    id: 11,
-    name: "Red Chilli",
-    price: 90,
-    unit: "kg",
-    location: "Bogura",
-    farmer: "Reza Farm",
-    farmerInitials: "RF2",
-    category: "Spices",
-    badge: "Seasonal",
-    trend: "up",
-    trendPct: "+20%",
-    aiHint: "Dry weather reducing yields — prices expected to climb.",
-    stock: 45,
-    minOrder: 2,
-    discount: "None",
-    listed: "Jan 4, 2026",
-    desc: "Fiery red chillies from Bogura. Sun-dried and packed fresh. High heat level.",
-    img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=600&q=80",
-  },
-  {
-    id: 12,
-    name: "Spinach",
-    price: 12,
-    unit: "kg",
-    location: "Dhaka",
-    farmer: "Noor Farm",
-    farmerInitials: "NF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "down",
-    trendPct: "-15%",
-    aiHint: "Oversupply near Dhaka — best price right now.",
-    stock: 300,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 10, 2026",
-    desc: "Tender fresh spinach leaves from Dhaka district. Washed and packed. Ready to cook.",
-    img: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&q=75",
-  },
-];
 
 const FALLBACK =
   "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80";
@@ -284,10 +40,56 @@ const hintStyle = {
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = products.find((p) => p.id === Number(id)) || products[0];
 
-  const [qty, setQty] = useState(product.minOrder);
+  const [products, setProducts] = useState([]);
+  const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/product");
+
+        const data = await res.json();
+
+        const formattedProducts = data.map((p) => ({
+          ...p,
+          farmerInitials: p.farmer
+            ?.split(" ")
+            .map((w) => w[0])
+            .join(""),
+          badge: null,
+          trend: "stable",
+          trendPct: "0%",
+          aiHint: "No trend data yet",
+          gallery: [p.img],
+          desc: p.product_desc
+        }));
+
+        setProducts(formattedProducts);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const product = products.find((p) => p.id === Number(id));
+
+  useEffect(() => {
+    if (product) {
+      setQty(product.minOrder || 1);
+    }
+    }, [product]);
+
+    if (!product) {
+      return (
+        <div style={{ padding: "40px" }}>
+          Loading product...
+        </div>
+      );
+    }
 
   const handleAddToCart = () => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -709,7 +511,7 @@ function ProductDetail() {
                 {product.farmer}
               </div>
               <div style={{ fontSize: "12px", color: "#718096" }}>
-                {product.location}, Bangladesh · Member since 2023
+                {product.location}, Bangladesh · Member Since {product.userSince}        
               </div>
               <div
                 style={{ fontSize: "11px", color: "#2f855a", marginTop: "2px" }}

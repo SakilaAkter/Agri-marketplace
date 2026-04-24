@@ -22,7 +22,8 @@ router.get("/product", async (req, res) => {
                 category_members.image_link AS img,
                 unit.unit_name AS unit,
                 category.category_name as category,
-                category_members.M_name as generic_name
+                category_members.M_name as generic_name,
+                users_renamed_2.date_added as userSince
 
             FROM product
 
@@ -67,6 +68,26 @@ router.get("/product", async (req, res) => {
         ORDER BY date_added DESC
         LIMIT 10;
         */
+});
+
+router.get("/locations", async (req, res) => {
+    const db = getDB();
+
+    const [rows] = await db.execute(
+        "SELECT location_id, location_name FROM location_dist"
+    );
+
+    res.json(rows);
+});
+
+router.get("/categories", async (req, res) => {
+    const db = getDB();
+
+    const [rows] = await db.execute(
+        "SELECT category_id, category_name FROM CATEGORY"
+    );
+
+    res.json(rows);
 });
 
 module.exports = router;
