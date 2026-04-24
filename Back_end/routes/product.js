@@ -20,7 +20,9 @@ router.get("/product", async (req, res) => {
                 location_dist.location_name AS location,
                 users_renamed_2.user_name AS farmer,
                 category_members.image_link AS img,
-                unit.unit_name AS unit
+                unit.unit_name AS unit,
+                category.category_name as category,
+                category_members.M_name as generic_name
 
             FROM product
 
