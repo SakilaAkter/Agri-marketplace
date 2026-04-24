@@ -3,13 +3,21 @@ const router = express.Router();
 const { getDB } = require("../db");
 const authMiddleware = require("../middleware/auth");
 
+router.get("/locations", async (req, res) => {
+    const db = getDB();
+    const [rows] = await db.execute(
+        "SELECT location_id, location_name FROM location_dist"
+    );
+    res.json(rows);
+});
+
 router.get("/profile", authMiddleware, async (req, res) => {
     const db = getDB();
 
     try {
         const userId = req.user.id;
         const [rows] = await db.execute(
-            "SELECT user_name, email, phone, role_id, date_added, about FROM USERS_RENAMED_2 WHERE user_id = ?",
+            "SELECT user_name, email, phone, role_id, date_added, about, location FROM USERS_RENAMED_2 WHERE user_id = ?",
             [userId]
         );
 
@@ -79,13 +87,13 @@ router.post("/change-password", authMiddleware, async (req, res) => {
 router.put("/profile", authMiddleware, async (req, res) => {
     const db = getDB();
     const userId = req.user.id;
-    const { name, phone, email, about } = req.body;
+    const { name, phone, email, about, location } = req.body;
     try {
         await db.execute(
             `UPDATE USERS_RENAMED_2 
-             SET user_name = ?, phone = ?, email = ?, about = ? 
+             SET user_name = ?, phone = ?, email = ?, about = ?, location = ? 
              WHERE user_id = ?`,
-            [name, phone, email, about, userId]
+            [name, phone, email, about, location, userId]
         );
         res.json({ message: "Profile updated successfully" });
     } catch (err) {

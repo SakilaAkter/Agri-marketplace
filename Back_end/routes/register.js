@@ -3,10 +3,20 @@ const router = express.Router();
 const { getDB } = require("../db");
 const bcrypt = require("bcrypt");
 
+router.get("/locations", async (req, res) => {
+    const db = getDB();
+
+    const [rows] = await db.execute(
+        "SELECT location_id, location_name FROM location_dist"
+    );
+
+    res.json(rows);
+});
+
 router.post("/register", async (req, res) => {
     const db = getDB();
 
-    const { user_name, phone, email, password, role_id, about , consumerType, masterPass} = req.body;
+    const { user_name, phone, email, password, role_id, about , consumerType, masterPass, location} = req.body;
 
     if (!user_name || !phone || !password || !role_id) {
         return res.status(400).json({ message: "All fields required" });
@@ -98,6 +108,26 @@ console.log("Tables:", tableNames);
                 VALUES (?, ?)`,
                 [user2, Number(consumerType)]
             ); 
+        }
+
+        if(Number(role_id) === 1){
+            const [bows] = await db.execute(
+                "SELECT role_id, USER_ID FROM USERS_RENAMED_2 WHERE PHONE = ?",
+                    [phone]
+            );
+            const user = bows[0];
+            if (bows.length == 0 || user.role_id != 1) {
+                return res.status(409).json({ message: "User doesn't exist" });
+            }
+
+            const user2 = user.USER_ID;
+        //    console.log(user2,user, Number(consumerType));
+            await db.execute(
+                `UPDATE USERS_RENAMED_2
+                SET location = ?
+                WHERE user_id = ?`,
+                [location, user2]
+            );
         }
 
         res.json({ message: "User registered successfully" });

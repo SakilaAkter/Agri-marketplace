@@ -16,11 +16,13 @@ const historyData = [
 
 function Profile() {
   const navigate = useNavigate();
+  const [locations, setLocations] = useState([]);
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
     about: "",
+    location: "",
   });
 
   const [role_name, setRole_name] = useState("");
@@ -32,6 +34,20 @@ function Profile() {
   const [saved, setSaved] = useState(false);
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
   const [pwMsg, setPwMsg] = useState("");
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/locations");
+        const data = await res.json();
+        setLocations(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLocations();
+  }, []);
     //use hook
     useEffect(() => {
       const fetchProfile = async () => {
@@ -60,7 +76,8 @@ function Profile() {
                   name: data.user_name,
                   phone: data.phone,
                   email: data.email,
-                  about: data.about
+                  about: data.about,
+                  location: data.location
               });
               setRole_name(data.role_name);
               setOrders(data.orders);
@@ -78,7 +95,10 @@ function Profile() {
   }, []);
 
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const set = (k) => (e) => setForm({
+    ...form,
+    [k]: k === "location" ? Number(e.target.value) : e.target.value,
+  });
   const setPw = (k) => (e) => setPwForm({ ...pwForm, [k]: e.target.value });
 
   const handleSave = async () => {
@@ -95,6 +115,7 @@ function Profile() {
           phone: form.phone,
           email: form.email,
           about: form.about,
+          location: form.location,
         }),
       });
       if (!res.ok) throw new Error("Update failed");
@@ -240,7 +261,7 @@ function Profile() {
                   marginTop: "8px",
                 }}
               >
-                📍 {form.about}
+                📍 {locations.find(l => l.location_id == form.location)?.location_name}
               </div>
             </>,
           )}
@@ -353,6 +374,23 @@ function Profile() {
                     />
                   </div>
                 ))}
+                  <div>
+                    <label style={labelStyle}>Location</label>
+
+                    <select
+                      value={form.location}
+                      onChange={set("location")}
+                      style={inputStyle}
+                    >
+                      <option value="">Select location...</option>
+
+                      {locations.map((loc) => (
+                        <option key={loc.location_id} value={loc.location_id}>
+                          {loc.location_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
               </div>
             </>,
           )}

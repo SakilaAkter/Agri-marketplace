@@ -1,23 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-/*const districts = [
-  "Jessore",
-  "Rangpur",
-  "Pabna",
-  "Bogura",
-  "Dinajpur",
-  "Khulna",
-  "Sylhet",
-  "Dhaka",
-  "Chattogram",
-];
-*/
 
 function Register() {
   const [role, setRole] = useState("1");
   const [consumerType, setConsumerType] = useState("");
   const [masterPass, setMasterPass] = useState("");
+  const [location, setLocation] = useState("");
+  const [locations, setLocations] = useState([]);
   const [form, setForm] = useState({
     user_name: "",
     phone: "",
@@ -32,11 +21,27 @@ function Register() {
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/locations");
+        const data = await res.json();
+        setLocations(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+
   const handleRegister = async () => {
     if (!form.user_name || !form.phone || !form.password) {
       setError("Please fill in all fields.");
       return;
     }
+
     if (role === 3 && (masterPass === "" || !masterPass)) {
       setError("Please provide master password");
       return;
@@ -49,7 +54,7 @@ function Register() {
       const res = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, role_id: role, consumerType, masterPass}),
+        body: JSON.stringify({ ...form, role_id: role, consumerType, masterPass, location}),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -456,7 +461,7 @@ function Register() {
             ))}
           </div>
 
-          {/*role === "farmer" && (
+          {role === "1" && (
             <div style={{ marginBottom: "16px" }}>
               <label
                 style={{
@@ -469,11 +474,12 @@ function Register() {
                   letterSpacing: "0.5px",
                 }}
               >
-                Farm district
+                Farm location
               </label>
+
               <select
-                value={form.district}
-                onChange={set("district")}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 style={{
                   width: "100%",
                   padding: "10px 14px",
@@ -483,13 +489,16 @@ function Register() {
                   background: "#f7fafc",
                 }}
               >
-                <option value="">Select district...</option>
-                {districts.map((d) => (
-                  <option key={d}>{d}</option>
+                <option value="">Select location...</option>
+
+                {locations.map((loc) => (
+                  <option key={loc.location_id} value={loc.location_id}>
+                    {loc.location_name}
+                  </option>
                 ))}
               </select>
             </div>
-          )*/}
+          )}
 
           <div style={{ marginBottom: "16px" }}>
             <label
