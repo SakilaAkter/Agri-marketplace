@@ -4,6 +4,7 @@ const connectDB = require("./db");
 const register = require("./routes/register.js");
 const login = require("./routes/login.js");
 const profile = require("./routes/profile.js")
+const product = require("./routes/product.js")
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use("/", register);
 app.use("/", login);
 app.use("/", profile);
+app.use("/", product);
 
 connectDB();
 

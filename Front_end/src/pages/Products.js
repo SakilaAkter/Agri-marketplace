@@ -1,310 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-
-const allProducts = [
-  {
-    id: 1,
-    name: "Tomato",
-    price: 20,
-    unit: "kg",
-    location: "Jessore",
-    farmer: "Rahim Farm",
-    farmerInitials: "RF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "up",
-    trendPct: "+12%",
-    aiHint: "Price rising due to low supply this week — buy now.",
-    stock: 240,
-    minOrder: 5,
-    discount: "5% off 50kg+",
-    listed: "Jan 10, 2026",
-    desc: "Farm-fresh tomatoes grown organically in Jessore. Harvested daily and delivered directly to buyers. No pesticides used.",
-    img: "https://images.unsplash.com/photo-1561136594-7f68413baa99?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1561136594-7f68413baa99?w=600&q=80",
-      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&q=80",
-      "https://images.unsplash.com/photo-1543258103-a62bdc069871?w=600&q=80",
-    ],
-  },
-  {
-    id: 2,
-    name: "Potato",
-    price: 15,
-    unit: "kg",
-    location: "Rangpur",
-    farmer: "Karim Farm",
-    farmerInitials: "KF",
-    category: "Vegetables",
-    badge: null,
-    trend: "down",
-    trendPct: "-8%",
-    aiHint: "Price dropping — good time to stock up in bulk.",
-    stock: 500,
-    minOrder: 10,
-    discount: "None",
-    listed: "Jan 8, 2026",
-    desc: "High quality potatoes from Rangpur. Ideal for restaurants and grocery shops. Freshly dug and cleaned.",
-    img: "https://images.unsplash.com/photo-1508313880080-c4bef0730395?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1508313880080-c4bef0730395?w=600&q=80",
-      "https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=600&q=80",
-      "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80",
-    ],
-  },
-  {
-    id: 3,
-    name: "Onion",
-    price: 25,
-    unit: "kg",
-    location: "Pabna",
-    farmer: "Hasan Farm",
-    farmerInitials: "HF",
-    category: "Vegetables",
-    badge: "Popular",
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Price has been stable for 2 weeks.",
-    stock: 180,
-    minOrder: 5,
-    discount: "10% off 100kg+",
-    listed: "Jan 5, 2026",
-    desc: "Fresh onions from Pabna. Our most popular product with consistent quality year-round.",
-    img: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&q=80",
-      "https://images.unsplash.com/photo-1580201092675-a0a6a6cafbb1?w=600&q=80",
-      "https://images.unsplash.com/photo-1587049633312-d628ae50a8ae?w=600&q=80",
-    ],
-  },
-  {
-    id: 4,
-    name: "Cauliflower",
-    price: 30,
-    unit: "kg",
-    location: "Bogura",
-    farmer: "Salam Farm",
-    farmerInitials: "SF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "up",
-    trendPct: "+18%",
-    aiHint: "Seasonal demand rising — price may go up further.",
-    stock: 80,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 9, 2026",
-    desc: "Fresh cauliflower picked this morning from Bogura farms. Perfect for restaurants and bulk buyers.",
-    img: "https://images.unsplash.com/photo-1510627498534-cf7e9002facc?w=600&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=600&q=80",
-      "https://images.unsplash.com/photo-1510627498534-cf7e9002facc?w=600&q=80",
-    ],
-  },
-  {
-    id: 5,
-    name: "Carrot",
-    price: 35,
-    unit: "kg",
-    location: "Dinajpur",
-    farmer: "Ali Farm",
-    farmerInitials: "AF",
-    category: "Vegetables",
-    badge: null,
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Steady supply from Dinajpur keeps price consistent.",
-    stock: 120,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 7, 2026",
-    desc: "Sweet crunchy carrots from Dinajpur. Great for bulk buyers, restaurants, and juice bars.",
-    img: "https://images.unsplash.com/photo-1445282768818-728615cc910a?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1445282768818-728615cc910a?w=600&q=80",
-      "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600&q=80",
-      "https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?w=600&q=80",
-    ],
-  },
-  {
-    id: 6,
-    name: "Rice (Aman)",
-    price: 55,
-    unit: "kg",
-    location: "Sylhet",
-    farmer: "Mia Farm",
-    farmerInitials: "MF",
-    category: "Grains",
-    badge: "Seasonal",
-    trend: "up",
-    trendPct: "+22%",
-    aiHint: "Post-harvest price rising fast — secure stock now.",
-    stock: 1000,
-    minOrder: 20,
-    discount: "3% off 200kg+",
-    listed: "Dec 20, 2025",
-    desc: "Premium Aman rice from Sylhet. Seasonal harvest with limited stock. Aromatic and high quality.",
-    img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",
-      "https://images.unsplash.com/photo-1536304993881-ff86e33cbef8?w=600&q=80",
-      "https://images.unsplash.com/photo-1604908176997-4316d0c3f7f4?w=600&q=80",
-    ],
-  },
-  {
-    id: 7,
-    name: "Green Pepper",
-    price: 40,
-    unit: "kg",
-    location: "Khulna",
-    farmer: "Alam Farm",
-    farmerInitials: "ALF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "down",
-    trendPct: "-5%",
-    aiHint: "Bumper harvest in Khulna pushing prices down.",
-    stock: 90,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 9, 2026",
-    desc: "Fresh green peppers from Khulna. Crisp and flavorful, ideal for salads and cooking.",
-    img: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=600&q=80",
-      "https://images.unsplash.com/photo-1596591868231-05e4680df929?w=600&q=80",
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&q=80",
-    ],
-  },
-  {
-    id: 8,
-    name: "Garlic",
-    price: 80,
-    unit: "kg",
-    location: "Rajshahi",
-    farmer: "Islam Farm",
-    farmerInitials: "IF",
-    category: "Spices",
-    badge: null,
-    trend: "up",
-    trendPct: "+15%",
-    aiHint: "Import restrictions raising garlic prices nationwide.",
-    stock: 60,
-    minOrder: 2,
-    discount: "None",
-    listed: "Jan 6, 2026",
-    desc: "Premium quality garlic from Rajshahi. Strong aroma and flavor. Dry-cured for longer shelf life.",
-    img: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&w=800",
-    gallery: [
-      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&q=80",
-      "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=600&q=80",
-      "https://images.unsplash.com/photo-1501420193253-7af0789765f3?w=600&q=80",
-    ],
-  },
-  {
-    id: 9,
-    name: "Brinjal",
-    price: 18,
-    unit: "kg",
-    location: "Jessore",
-    farmer: "Dewan Farm",
-    farmerInitials: "DF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "stable",
-    trendPct: "0%",
-    aiHint: "Consistent supply — price expected to hold.",
-    stock: 150,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 10, 2026",
-    desc: "Fresh brinjal picked daily from Jessore farms. Deep purple, firm and fresh.",
-    img: "https://images.pexels.com/photos/321551/pexels-photo-321551.jpeg?w=400&h=300&fit=crop",
-    gallery: [
-      "https://images.pexels.com/photos/321551/pexels-photo-321551.jpeg?w=600&h=400&fit=crop",
-      "https://images.pexels.com/photos/7511774/pexels-photo-7511774.jpeg?w=600&h=400&fit=crop",
-      "https://images.pexels.com/photos/4033636/pexels-photo-4033636.jpeg?w=600&h=400&fit=crop",
-    ],
-  },
-
-  {
-    id: 10,
-    name: "Orange",
-    price: 60,
-    unit: "kg",
-    location: "Khulna",
-    farmer: "Haque Farm",
-    farmerInitials: "HQF",
-    category: "Fruits",
-    badge: null,
-    trend: "down",
-    trendPct: "-10%",
-    aiHint:
-      "New harvest season dropping orange prices — good time to buy in bulk.",
-    stock: 200,
-    minOrder: 5,
-    discount: "None",
-    listed: "Jan 8, 2026",
-    desc: "Sweet and juicy oranges from Khulna. High vitamin C content. Perfect for restaurants, juice producers and grocery shops.",
-    img: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?w=400&h=300&fit=crop",
-    gallery: [
-      "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?w=600&h=400&fit=crop",
-      "https://images.pexels.com/photos/952360/pexels-photo-952360.jpeg?w=600&h=400&fit=crop",
-      "https://images.pexels.com/photos/4110351/pexels-photo-4110351.jpeg?w=600&h=400&fit=crop",
-    ],
-  },
-  {
-    id: 11,
-    name: "Red Chilli",
-    price: 90,
-    unit: "kg",
-    location: "Bogura",
-    farmer: "Reza Farm",
-    farmerInitials: "RF2",
-    category: "Spices",
-    badge: "Seasonal",
-    trend: "up",
-    trendPct: "+20%",
-    aiHint: "Dry weather reducing yields — prices expected to climb.",
-    stock: 45,
-    minOrder: 2,
-    discount: "None",
-    listed: "Jan 4, 2026",
-    desc: "Fiery red chillies from Bogura. Sun-dried and packed fresh. High heat level.",
-    img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=600&q=80",
-      "https://images.unsplash.com/photo-1583119022894-919a68a3d0e3?w=600&q=80",
-      "https://images.unsplash.com/photo-1526346698789-22fd84314424?w=600&q=80",
-    ],
-  },
-  {
-    id: 12,
-    name: "Spinach",
-    price: 12,
-    unit: "kg",
-    location: "Dhaka",
-    farmer: "Noor Farm",
-    farmerInitials: "NF",
-    category: "Vegetables",
-    badge: "Fresh",
-    trend: "down",
-    trendPct: "-15%",
-    aiHint: "Oversupply near Dhaka — best price right now.",
-    stock: 300,
-    minOrder: 3,
-    discount: "None",
-    listed: "Jan 10, 2026",
-    desc: "Tender fresh spinach leaves from Dhaka district. Washed and packed. Ready to cook.",
-    img: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&q=75",
-    gallery: [
-      "https://images.unsplash.com/photo-1604152135912-04a022e23696?w=600&q=80",
-      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600&q=80",
-      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=600&q=80",
-    ],
-  },
-];
 
 const FALLBACK =
   "https://images.pexels.com/photos/1458694/pexels-photo-1458694.jpeg?w=400&h=300&fit=crop";
@@ -345,6 +41,8 @@ function Products() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [allProducts, setAllProducts] = useState([]);
+
   const params = new URLSearchParams(location.search);
   const initSearch = params.get("search") || "";
   const initCat = params.get("category") || "";
@@ -360,6 +58,36 @@ function Products() {
   const [cart, setCart] = useState(
     JSON.parse(localStorage.getItem("cart") || "[]"),
   );
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/product");
+
+        const data = await res.json();
+
+        const formattedProducts = data.map((p) => ({
+          ...p,
+          farmerInitials: p.farmer
+            ?.split(" ")
+            .map((w) => w[0])
+            .join(""),
+          badge: null,
+          trend: "stable",
+          trendPct: "0%",
+          aiHint: "No trend data yet",
+          gallery: [p.img],
+          desc: p.product_desc
+        }));
+
+        setAllProducts(formattedProducts);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const toggleTrend = (t) =>
     setTrends((prev) =>
