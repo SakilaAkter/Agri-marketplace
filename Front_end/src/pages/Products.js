@@ -150,9 +150,19 @@ function Products() {
 
   const addToCart = (product) => {
     const updated = [...cart];
+
+    const step = Number(product.minOrder) || 1;
+    const maxim = Number(product.stock);
+
     const exists = updated.find((i) => i.id === product.id);
-    if (exists) exists.qty += 1;
-    else updated.push({ ...product, qty: 1 });
+
+    if (exists) {
+      exists.qty = Number(exists.qty || 0) + step;
+      if(exists.qty >= maxim) exists.qty = maxim; 
+    } else {
+      updated.push({ ...product, qty: step });
+    }
+
     setCart(updated);
     localStorage.setItem("cart", JSON.stringify(updated));
     setAddedId(product.id);

@@ -78,10 +78,15 @@ function ProductDetail() {
   const product = products.find((p) => p.id === Number(id));
 
   useEffect(() => {
-    if (product) {
-      setQty(product.minOrder || 1);
-    }
-    }, [product]);
+    if (!product) return;
+
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const existing = cart.find((item) => item.id === product.id);
+
+    const initialQty = existing?.qty ?? product.minOrder ?? 1;
+
+    setQty(Number(initialQty)); 
+  }, [product]);
 
     if (!product) {
       return (
@@ -91,12 +96,25 @@ function ProductDetail() {
       );
     }
 
+   const step = Number(product?.minOrder ?? 1);
+
   const handleAddToCart = () => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+    const step = Number(product.minOrder) || 1;
+    const maxim = Number(product.stock);
+
     const exists = cart.find((i) => i.id === product.id);
-    if (exists) exists.qty += qty;
-    else cart.push({ ...product, qty });
+
+    if (exists) {
+      exists.qty = Number(exists.qty || 0) + (qty - Number(exists.qty || 0));
+      if(exists.qty >= maxim) exists.qty = maxim; 
+    } else {
+      cart.push({ ...product, qty });
+    }
+
     localStorage.setItem("cart", JSON.stringify(cart));
+    setQty(qty); 
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -391,7 +409,13 @@ function ProductDetail() {
               Quantity ({product.unit})
             </span>
             <button
-              onClick={() => setQty((q) => Math.max(product.minOrder, q - 1))}
+              onClick={() =>
+                    setQty((q) => {
+                      const current = Number(q);
+                      const min = Number(product.minOrder);
+                      return Math.max(min, current - step);
+                    })
+                  }
               style={{
                 width: "32px",
                 height: "32px",
@@ -416,7 +440,16 @@ function ProductDetail() {
               {qty}
             </span>
             <button
-              onClick={() => setQty((q) => q + 1)}
+              onClick={() =>
+                    setQty((q) => {
+                      const current = Number(q);
+                      const step = Number(product.minOrder);
+
+                      if (isNaN(current) || isNaN(step)) return step || 1;
+
+                      return current + step;
+                    })
+                  }
               style={{
                 width: "32px",
                 height: "32px",
