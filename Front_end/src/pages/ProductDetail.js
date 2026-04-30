@@ -119,6 +119,18 @@ function ProductDetail() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  const threshold =
+  product.discount_avail_if == null
+    ? Infinity
+    : Number(product.discount_avail_if);
+
+  const discount = Number(product.discount) || 0;
+
+  const total =
+    qty >= threshold
+      ? qty * (product.price - discount)
+      : qty * product.price;
+
   const box = (label, value) => (
     <div
       style={{
@@ -472,7 +484,7 @@ function ProductDetail() {
           <div style={{ fontSize: "13px", color: "#718096" }}>
             Total:{" "}
             <strong style={{ color: "#166534", fontSize: "16px" }}>
-              {qty * product.price} Tk
+              {total} Tk
             </strong>
           </div>
 
@@ -564,7 +576,10 @@ function ProductDetail() {
           >
             {box("Available stock", `${product.stock} ${product.unit}`)}
             {box("Min. order", `${product.minOrder} ${product.unit}`)}
-            {box("Discount", product.discount)}
+            {box(
+              "Discount",
+              `${product.discount} TK per ${product.unit} for ${product.discount_avail_if} ${product.unit} or more`
+            )}
             {box("Listed on", product.listed)}
           </div>
         </div>
