@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 
-const historyData = [
+/*const historyData = [
   { action: "Listed new product: Fresh Tomato", date: "Today, 10:24 AM" },
   {
     action: "Accepted order #1042 from Dhaka Restaurant",
@@ -12,7 +12,7 @@ const historyData = [
   { action: "Updated price: Potato 15 Tk → 18 Tk/kg", date: "Jan 8, 2026" },
   { action: "Rejected custom deal from Khan Grocery", date: "Jan 7, 2026" },
   { action: "Profile information updated", date: "Jan 5, 2026" },
-];
+];*/
 
 function Profile() {
   const navigate = useNavigate();
@@ -34,6 +34,7 @@ function Profile() {
   const [saved, setSaved] = useState(false);
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
   const [pwMsg, setPwMsg] = useState("");
+  const [historyData, setHistoryData] = useState([]);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -48,7 +49,7 @@ function Profile() {
 
     fetchLocations();
   }, []);
-    //use hook
+
     useEffect(() => {
       const fetchProfile = async () => {
           const token = localStorage.getItem("token");
@@ -92,6 +93,31 @@ function Profile() {
           }
       };
       fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchHistoryData = async () => {
+      const token = localStorage.getItem("token");
+          if (!token) {
+              navigate("/login");
+              return;
+          }
+      try {
+        const res = await fetch("http://localhost:3000/history", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+        const data = await res.json();
+        setHistoryData(data.history);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchHistoryData();
   }, []);
 
 

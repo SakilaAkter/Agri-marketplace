@@ -11,6 +11,102 @@ router.get("/locations", async (req, res) => {
     res.json(rows);
 });
 
+router.get("/history", authMiddleware, async(req, res) =>{
+    const db = getDB();
+    try{
+        const userID = req.user.id;
+        const [rows1] = await db.execute(
+            "select date_added, product_name from PRODUCT where farmer_id = ? ORDER BY date_added DESC LIMIT 5", 
+            [userID]
+        )
+        const [rows2] = await db.execute(
+            "select date from report where reporter_id = ? ORDER BY date DESC LIMIT 5",
+            [userID]
+        )
+        const [rows3] = await db.execute(
+            "select order_date from ORD_ER where buyer_id = ? ORDER BY order_date DESC LIMIT 5",
+            [userID]
+        )
+        const [rows4] = await db.execute(
+            "select product_name, old_price, new_price, changed_date from PRICE_HISTORY join product using(product_id) where product.farmer_id = ?",
+            [userID]
+        )
+        const [rows5] = await db.execute(
+            "select start_date from custom_deal where farmer_id = ? or buyer_id = ?",
+            [userID, userID]
+        )
+
+        let historyData = [];
+
+        rows1.forEach(item => {
+            if (item.product_name && item.date_added) {
+                historyData.push({
+                    action: `Listed new product: ${item.product_name}`,
+                    date: item.date_added
+                });
+            }
+        });
+
+        rows2.forEach(item => {
+            if (item.date) {
+                historyData.push({
+                    action: "Submitted a report",
+                    date: item.date
+                });
+            }
+        });
+
+        rows3.forEach(item => {
+            if (item.order_date) {
+                historyData.push({
+                    action: "Placed a new order",
+                    date: item.order_date
+                });
+            }
+        });
+
+        rows4.forEach(item => {
+            if (
+                item.product_name &&
+                item.old_price != null &&
+                item.new_price != null &&
+                item.changed_date
+            ) {
+                historyData.push({
+                    action: `Updated price: ${item.product_name} ${item.old_price} Tk → ${item.new_price} Tk`,
+                    date: item.changed_date
+                });
+            }
+        });
+
+        rows5.forEach(item => {
+            if (item.start_date) {
+                historyData.push({
+                    action: "Started a custom deal",
+                    date: item.start_date
+                });
+            }
+        });
+
+        historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        historyData = historyData.slice(0, 5);
+
+        res.json({
+            success: true,
+            history: historyData
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch history"
+        });
+    }
+});
+
+
 router.get("/profile", authMiddleware, async (req, res) => {
     const db = getDB();
 
