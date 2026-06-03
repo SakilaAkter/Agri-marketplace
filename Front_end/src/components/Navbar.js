@@ -43,6 +43,19 @@ function Navbar() {
         </span>
 
         <span
+          onClick={() => navigate("/predictor")}
+          style={{
+            color: "#c8f0d8",
+            fontSize: "13px",
+            padding: "6px 14px",
+            borderRadius: "20px",
+            cursor: "pointer",
+          }}
+        >
+          Predictor
+        </span>
+
+        <span
           onClick={() => navigate("/products")}
           style={{
             color: "#c8f0d8",

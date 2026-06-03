@@ -1,0 +1,129 @@
+/*
+
+
+
+
+cd backend
+source ../venv/bin/activate  
+python app.py
+
+
+
+cd frontend
+npm start
+
+*/
+
+/* Base Layout & Background Image Setup */
+/* Base Container Setup */
+.container {
+  position: relative; /* Necessary context for positioning child layers */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  
+  /* Layout centering for your app content overlaying the video */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Background Video Sizing & Layer Rules */
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Pin and scale video like a background-image */
+  z-index: -1; /* Pushes the video safely behind your forms/charts */
+  pointer-events: none; /* User clicks fall straight through to app forms */
+}
+
+/* Page Header Title styling */
+.title {
+  color: #ffffff;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); /* Deep shadow to stay visible over movement */
+}
+
+/* Glassmorphism Structural Cards */
+.form-card, .result-card, .graph-card {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 25px;
+  padding: 30px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  
+  /* Glass finish layer shields text content against moving pixels behind it */
+  background: rgba(255, 255, 255, 0.88); 
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Inner form formatting */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333333;
+}
+
+.form-group select, .form-group input {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* Action Trigger Button Styling */
+.predict-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  background-color: #05986a;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.predict-btn:hover {
+  background-color: #00de98;
+}
+
+.predict-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Result specific headers and numeric values */
+.result-card h2, .graph-card h2 {
+  margin-top: 0;
+  color: #222222;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.price-text {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #28a745;
+  margin: 15px 0;
+}

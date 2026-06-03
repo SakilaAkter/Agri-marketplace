@@ -7,6 +7,7 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import Predictor from "./pages/Predictor.js";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/predictor" element = {<Predictor />} />
         <Route
           path="/farmer/dashboard"
           element={
