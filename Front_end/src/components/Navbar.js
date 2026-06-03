@@ -95,6 +95,20 @@ function Navbar() {
         >
           Register
         </span>
+        <span
+          onClick={() => navigate("/admin")}
+          style={{
+            background: "#e53e3e",
+            color: "white",
+            fontSize: "13px",
+            padding: "7px 16px",
+            borderRadius: "20px",
+            cursor: "pointer",
+            fontWeight: "500",
+          }}
+        >
+          Admin
+        </span>
 
         <span
           onClick={() => navigate("/profile")}
@@ -108,6 +122,8 @@ function Navbar() {
         >
           Profile
         </span>
+
+  
       </div>
     </nav>
   );
