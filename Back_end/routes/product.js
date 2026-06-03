@@ -45,6 +45,8 @@ router.get("/product", async (req, res) => {
             LEFT JOIN expired_product 
                 ON product.product_id = expired_product.product_id
 
+            where product.status = 'active' and users_renamed_2.status = 'active'
+
             ORDER BY product.date_added DESC
         `);
 

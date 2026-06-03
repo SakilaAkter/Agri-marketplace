@@ -50,47 +50,47 @@ function Profile() {
     fetchLocations();
   }, []);
 
-    useEffect(() => {
-      const fetchProfile = async () => {
-          const token = localStorage.getItem("token");
-          if (!token) {
-              navigate("/login");
-              return;
-          }
-          try {
-              const res = await fetch(
-                  "http://localhost:3000/profile",
-                  {
-                      method: "GET",
-                      headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                      },
-                  }
-              );
-              if (!res.ok) {
-                  navigate("/login");
-                  return;
-              }
-              const data = await res.json();
-              setForm({
-                  name: data.user_name,
-                  phone: data.phone,
-                  email: data.email,
-                  about: data.about,
-                  location: data.location
-              });
-              setRole_name(data.role_name);
-              setOrders(data.orders);
-              setProductCount(data.product_count);
-              const dateOnly = new Date(data.date_added).toISOString().split("T")[0];
-              setMemberSince(dateOnly);
-              setActiveDeals(data.active_deal);
+  useEffect(() => {
+    const fetchProfile = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        try {
+            const res = await fetch(
+                "http://localhost:3000/profile",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (!res.ok) {
+                navigate("/login");
+                return;
+            }
+            const data = await res.json();
+            setForm({
+                name: data.user_name,
+                phone: data.phone,
+                email: data.email,
+                about: data.about,
+                location: data.location
+            });
+            setRole_name(data.role_name);
+            setOrders(data.orders);
+            setProductCount(data.product_count);
+            const dateOnly = new Date(data.date_added).toISOString().split("T")[0];
+            setMemberSince(dateOnly);
+            setActiveDeals(data.active_deal);
 
-          } catch (err) {
-              console.log(err);
-              navigate("/login");
-          }
+        } catch (err) {
+            console.log(err);
+            navigate("/login");
+        }
       };
       fetchProfile();
   }, []);
