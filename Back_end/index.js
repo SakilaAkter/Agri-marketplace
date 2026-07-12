@@ -7,6 +7,7 @@ const profile = require("./routes/profile.js")
 const product = require("./routes/product.js")
 const adminp = require("./routes/admin.js")
 const tstatus = require("./routes/ban_unban.js")
+const cart = require("./routes/add_to_cart.js")
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use("/", profile);
 app.use("/", product);
 app.use("/", adminp);
 app.use("/", tstatus);
+app.use("/", cart);
 
 connectDB();
 

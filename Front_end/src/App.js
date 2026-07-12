@@ -8,6 +8,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Predictor from "./pages/Predictor.js";
+import Cart from "./pages/Cart.js";
 
 function App() {
   return (
@@ -37,7 +38,7 @@ function App() {
         />
         <Route
           path="/cart"
-          element={<div style={{ padding: "40px" }}>Cart coming soon</div>}
+          element={<Cart />}
         />
       </Routes>
     </BrowserRouter>
