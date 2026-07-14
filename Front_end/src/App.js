@@ -5,10 +5,20 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import Checkout from "./pages/Checkout.js";
+import Payment from "./pages/Payment";
+import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Predictor from "./pages/Predictor.js";
-import Cart from "./pages/Cart.js";
+
+import FarmerDashboard from "./pages/FarmerDashboard";
+import CreateProduct from "./pages/CreateProduct";
+import ManageProducts from "./pages/ManageProducts";
+import ViewOrder from "./pages/ViewOrder";
+import Cart from "./pages/Cart";
+import CustomDeal from "./pages/CustomDeal";
+import Report from "./pages/Report";
 
 function App() {
   return (
@@ -21,25 +31,18 @@ function App() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/predictor" element = {<Predictor />} />
-        <Route
-          path="/farmer/dashboard"
-          element={
-            <div style={{ padding: "40px" }}>
-              Farmer Dashboard coming soon
-            </div>
-          }
-        />
-        <Route
-          path="/custom-deal"
-          element={
-            <div style={{ padding: "40px" }}>Custom Deal coming soon</div>
-          }
-        />
-        <Route
-          path="/cart"
-          element={<Cart />}
-        />
+        <Route path="/predictor" element={<Predictor />} />
+        <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+        <Route path="/farmer/products/new" element={<CreateProduct />} />
+
+        <Route path="/farmer/products" element={<ManageProducts />} />
+        <Route path="/farmer/orders" element={<ViewOrder />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/custom-deal" element={<CustomDeal />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/report" element={<Report />} />
       </Routes>
     </BrowserRouter>
   );
