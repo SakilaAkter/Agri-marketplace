@@ -47,7 +47,7 @@ router.get("/product", async (req, res) => {
 
             where product.status = 'active' and users_renamed_2.status = 'active'
 
-            ORDER BY product.date_added DESC
+            ORDER BY product.date_added
         `);
 
         if (rows.length === 0) {

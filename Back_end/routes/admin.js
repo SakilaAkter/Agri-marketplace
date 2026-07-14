@@ -108,7 +108,7 @@ router.get("/productinfo", authMiddleware, authorizeRole(3), async (req, res) =>
 
     try {
         const [product_c] = await db.execute(
-            `select product_id, product_name, farmer_id, price, status from product
+            `select product_id, product_name, farmer_id, price, status, date_added from product order by date_added
             `
         );
 
@@ -127,6 +127,35 @@ router.get("/productinfo", authMiddleware, authorizeRole(3), async (req, res) =>
 
     }
 });
+
+
+router.get("/orderinfo", authMiddleware, authorizeRole(3), async (req, res) => {
+    const db = getDB();
+
+    try {
+        const [Order_c] = await db.execute(
+            `select ord_er.order_id, ord_er.buyer_id, ord_er.order_date, order_item.product_id, ord_er.sta_tus from ord_er
+            join order_item using(order_id)
+            `
+        );
+
+        /*if (product_c.length < 0) {
+            return res.status(404).json({
+                message: "No Order"
+            });
+        }*/
+
+        res.json(Order_c);
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+});
+
+
 
 
 

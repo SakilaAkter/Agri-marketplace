@@ -19,6 +19,7 @@ function Admin() {
  const [farmerInfo, setFarmerInfo] = useState([]);
  const [consumerInfo, setConsumerInfo] = useState([]);
  const [productInfo, setProductInfo] = useState([]);
+ const [orderInfo, setOrderInfo] = useState([]);
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -118,6 +119,39 @@ function Admin() {
         }
       };
       fetchConsumerData();
+  }, []);
+
+  useEffect(() => {
+    const fetchOrderData = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        try {
+            const res = await fetch(
+                "http://localhost:3000/orderinfo",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (!res.ok) {
+                navigate("/");
+                return;
+            }
+            const data = await res.json();
+            setOrderInfo(data)
+
+        } catch (err) {
+            console.log(err);
+            navigate("/");
+        }
+      };
+      fetchOrderData();
   }, []);
 
   useEffect(() => {
@@ -265,39 +299,45 @@ function Admin() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>Fresh Tomatoes</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>Rahim Ali</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>40/kg</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
-                    <span style={{ background: "#fef9c3", color: "#854d0e", padding: "3px 10px", borderRadius: "20px", fontSize: "12px" }}>Pending</span>
-                  </td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
-                    <button style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer" }}>View</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>Organic Rice</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>Karim Hossain</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>60/kg</td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
-                    <span style={{ background: "#dcfce7", color: "#166534", padding: "3px 10px", borderRadius: "20px", fontSize: "12px" }}>Approved</span>
-                  </td>
-                  <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
-                    <button style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer" }}>View</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "12px 16px", color: "#1a202c" }}>Green Chili</td>
-                  <td style={{ padding: "12px 16px", color: "#1a202c" }}>Fatema Begum</td>
-                  <td style={{ padding: "12px 16px", color: "#1a202c" }}>80/kg</td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span style={{ background: "#fee2e2", color: "#991b1b", padding: "3px 10px", borderRadius: "20px", fontSize: "12px" }}>Flagged</span>
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <button style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer" }}>View</button>
-                  </td>
-                </tr>
+                  {productInfo.slice(0, 5).map((product, i) => (
+                  <tr key={i}>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.product_name}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.farmer_id}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.price}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
+                      <span style={{
+                        background: product.status === "active" ? "#dcfce7" : product.status === "banned" ? "#fef9c3" : "#fee2e2",
+                        color: product.status === "active" ? "#166534" : product.status === "banned" ? "#854d0e" : "#991b1b",
+                        padding: "3px 10px", borderRadius: "20px", fontSize: "12px"
+                      }}>
+                        {product.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
+                      {/*<button style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "6px", border: "1px solid #bbf7d0", background: "#dcfce7", color: "#166534", cursor: "pointer", marginRight: "6px" }}>Approve</button>*/}
+                      <button
+                        onClick={() => handleToggleStatus2(product.product_id, setProductInfo)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 12px",
+                          borderRadius: "6px",
+                          border: product.status === "banned"
+                            ? "1px solid #86efac"
+                            : "1px solid #fca5a5",
+                          background: product.status === "banned"
+                            ? "#dcfce7"
+                            : "#fee2e2",
+                          color: product.status === "banned"
+                            ? "#166534"
+                            : "#991b1b",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {product.status === "banned" ? "Unban" : "Ban"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -492,31 +532,26 @@ function Admin() {
               <thead>
                 <tr style={{ background: "#f8fafc" }}>
                   <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Order ID</th>
-                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Consumer</th>
-                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Product</th>
-                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Amount</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Consumer ID</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Product ID</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Order Date</th>
                   <th style={{ padding: "12px 16px", textAlign: "left", color: "#718096", fontWeight: "500", borderBottom: "1px solid #e2e8f0" }}>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { id: "#001", consumer: "Sara Khan", product: "Organic Rice", amount: "600", status: "Delivered" },
-                  { id: "#002", consumer: "Nabil Ahmed", product: "Fresh Tomatoes", amount: "200", status: "Pending" },
-                  { id: "#003", consumer: "Riya Das", product: "Green Chili", amount: "400", status: "Processing" },
-                  { id: "#004", consumer: "Tanvir Islam", product: "Sweet Mango", amount: "960", status: "Delivered" },
-                ].map((order, i) => (
+                {orderInfo.map((order, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#2563eb" }}>{order.id}</td>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.consumer}</td>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.product}</td>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.amount} TK</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#2563eb" }}>{order.order_id}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.buyer_id}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.product_id}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{order.order_date}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
                       <span style={{
-                        background: order.status === "Delivered" ? "#dcfce7" : order.status === "Pending" ? "#fef9c3" : "#e0f2fe",
-                        color: order.status === "Delivered" ? "#166534" : order.status === "Pending" ? "#854d0e" : "#0369a1",
+                        background: order.sta_tus === "Delivered" ? "#dcfce7" : order.sta_tus == "paid" ? "#fef9c3" : "#e0f2fe",
+                        color: order.sta_tus === "Delivered" ? "#166534" : order.sta_tus == "paid" ? "#854d0e" : "#0369a1",
                         padding: "3px 10px", borderRadius: "20px", fontSize: "12px"
                       }}>
-                        {order.status}
+                        {order.sta_tus}
                       </span>
                     </td>
                   </tr>
