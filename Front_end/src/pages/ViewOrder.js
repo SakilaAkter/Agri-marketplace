@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 const statusStyles = {
-  pending: { background: "#fef3c7", color: "#92400e" },
+  paid: { background: "#fef3c7", color: "#92400e" },
   accepted: { background: "#d1fae5", color: "#065f46" },
   rejected: { background: "#fee2e2", color: "#991b1b" },
 };
@@ -10,10 +10,25 @@ const statusStyles = {
 function ViewOrders() {
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("farmerOrders") || "[]");
-    setOrders(stored);
-  }, []);
+useEffect(() => {
+    const fetchOrders = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:3000/orderinfofarmer", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            setOrders(data);
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+        }
+    };
+
+    fetchOrders();
+}, []);
 
   return (
     <div style={{ background: "#f7faf8", minHeight: "100vh" }}>

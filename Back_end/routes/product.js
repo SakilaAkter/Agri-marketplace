@@ -31,7 +31,7 @@ router.get("/product", async (req, res) => {
                 ON users_renamed_2.user_id = product.farmer_id
 
             JOIN location_dist 
-                ON users_renamed_2.location = location_dist.location_id
+                ON users_renamed_2.location = location_dist.location_id and product.location = location_dist.location_id
 
             JOIN category 
                 ON product.category_id = category.category_id
@@ -91,5 +91,29 @@ router.get("/categories", async (req, res) => {
 
     res.json(rows);
 });
+
+
+router.get("/categorymember", async (req, res) => {
+    const db = getDB();
+
+    const [rows] = await db.execute(
+        "SELECT * FROM category_members"
+    );
+
+    res.json(rows);
+});
+
+router.get("/unity", async (req, res) => {
+    const db = getDB();
+
+    const [rows] = await db.execute(
+        "SELECT * FROM unit"
+    );
+
+    res.json(rows);
+});
+
+
+
 
 module.exports = router;

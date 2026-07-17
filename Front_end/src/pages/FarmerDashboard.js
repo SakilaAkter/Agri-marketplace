@@ -1,50 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const recentOrders = [
-  {
-    id: "#1042",
-    buyer: "Dhaka Restaurant",
-    product: "Tomato 20kg",
-    amount: 400,
-    status: "pending",
-  },
-  {
-    id: "#1041",
-    buyer: "Khan Grocery",
-    product: "Onion 50kg",
-    amount: 1250,
-    status: "accepted",
-  },
-  {
-    id: "#1040",
-    buyer: "Rahim Store",
-    product: "Potato 30kg",
-    amount: 450,
-    status: "accepted",
-  },
-  {
-    id: "#1039",
-    buyer: "City Mart",
-    product: "Carrot 15kg",
-    amount: 525,
-    status: "rejected",
-  },
-  {
-    id: "#1038",
-    buyer: "Fresh Foods",
-    product: "Spinach 10kg",
-    amount: 120,
-    status: "pending",
-  },
-];
-
-const topProducts = [
-  { emoji: "🍅", name: "Tomato", price: 20, stock: 240, badge: "Fresh" },
-  { emoji: "🧅", name: "Onion", price: 25, stock: 180, badge: "Popular" },
-  { emoji: "🥔", name: "Potato", price: 15, stock: 500, badge: "Fresh" },
-  { emoji: "🥦", name: "Cauliflower", price: 30, stock: 8, badge: "Low" },
-];
 
 const aiInsights = [
   "↑ Tomato prices rising +12% — consider increasing price by 2-3 Tk.",
@@ -61,19 +16,139 @@ const statusStyle = {
 
 function FarmerDashboard() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState(recentOrders);
 
-  const handleOrder = (id, action) => {
+    const [orders, setOrders] = useState([]);
+    const [topProducts, setTopProducts] = useState([]);
+    const [user, setUser] = useState([]);
+    const [locations, setLocations] = useState([]);
+    
+useEffect(() => {
+    const fetchOrders = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:3000/orderinfofarmer", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            setOrders(data);
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+        }
+    };
+
+    fetchOrders();
+}, []);
+
+useEffect(() => {
+    const fetchProducts = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:3000/myproducts", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            setTopProducts(data);
+
+        } catch (err) {
+            console.error("Fetch error2:", err);
+        }
+    };
+
+    fetchProducts();
+}, []);
+
+useEffect(() => {
+    const fetchUser = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:3000/profile", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            setUser(data);
+
+        } catch (err) {
+            console.error("Fetch error2:", err);
+        }
+    };
+
+    fetchUser();
+}, []);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/locations");
+        const data = await res.json();
+        setLocations(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  const totProd = topProducts.length;
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const addedLastWeek = topProducts.filter(
+    (p) => new Date(p.date_added) > oneWeekAgo
+  ).length;
+
+  const totOrd = orders.length;
+
+  const addedLastWeekOrder = orders.filter(
+    (p) => new Date(p.date) > oneWeekAgo
+  ).length;
+
+  let amount2 = 0;
+
+  for (const p of orders) {
+    if (p.status === "accepted") {
+      amount2 += p.amount;
+    }
+  }
+
+    const smallestProduct =
+      orders.length > 0
+        ? orders.reduce((min, p) => (p.qty < min.qty ? p : min))
+        : null;
+
+  const handleOrder = async (id, action) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === id ? { ...o, status: action } : o)),
     );
+        try {
+        const res = await fetch("http://localhost:3000/rejectorder", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // if using JWT
+        },
+        body: JSON.stringify({
+    order_id: id, statust: action,
+}),
+        });
+    } catch (err) {
+        console.error(err);
+        alert("Rejection failed.");
+    }
   };
 
   const stats = [
-    { val: "12", label: "Products listed", change: "↑ 2 this week", up: true },
-    { val: "48", label: "Total orders", change: "↑ 5 this week", up: true },
+    { val: totProd, label: "Products listed", change: `↑ ${addedLastWeek} this week`, up: true },
+    { val: totOrd, label: "Total orders", change: `↑ ${addedLastWeekOrder} this week`, up: true },
     {
-      val: "12,400 Tk",
+      val: amount2,
       label: "Total revenue",
       change: "↑ 8% vs last week",
       up: true,
@@ -251,10 +326,11 @@ function FarmerDashboard() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: "13px", fontWeight: "500" }}>
-                Rahim Karim
+                {user.user_name}
               </div>
               <div style={{ fontSize: "11px", color: "#718096" }}>
-                Jessore, Bangladesh
+
+                {locations.find(l => l.location_id == user.location)?.location_name}, Bangladesh
               </div>
             </div>
             <div
@@ -451,7 +527,7 @@ function FarmerDashboard() {
                         {o.id}
                       </div>
                       <div style={{ fontSize: "11px", color: "#718096" }}>
-                        {o.buyer} · {o.product}
+                        {o.buyer} · {o.items.name}
                       </div>
                     </div>
                     <div
@@ -465,10 +541,10 @@ function FarmerDashboard() {
                       <span style={{ fontSize: "12px", fontWeight: "500" }}>
                         {o.amount} Tk
                       </span>
-                      {o.status === "pending" ? (
+                      {o.status === "paid" ? (
                         <div style={{ display: "flex", gap: "4px" }}>
                           <button
-                            onClick={() => handleOrder(o.id, "accepted")}
+                            onClick={() => handleOrder(o.id, "accept")}
                             style={{
                               padding: "3px 8px",
                               background: "#d1fae5",
@@ -562,7 +638,7 @@ function FarmerDashboard() {
               {card(
                 <>
                   {cardTitle("Top products", "Manage →", "/farmer/products")}
-                  {topProducts.map((p, i) => (
+                  {topProducts.slice(0,6).map((p, i) => (
                     <div
                       key={i}
                       style={{
@@ -589,14 +665,14 @@ function FarmerDashboard() {
                           flexShrink: 0,
                         }}
                       >
-                        {p.emoji}
+                      {p.image_link ? ( <img src={p.image_link} alt={p.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', }} /> ) : ( <span style={{ fontSize: '18px' }}>📦</span> )}
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "12px", fontWeight: "500" }}>
-                          {p.name}
+                          {p.product_name}
                         </div>
                         <div style={{ fontSize: "11px", color: "#718096" }}>
-                          {p.price} Tk/kg · {p.stock}kg left
+                          {p.price} Tk/{p.unit_name} · {p.quantity}{p.unit_name} left
                         </div>
                       </div>
                       <span
@@ -605,11 +681,11 @@ function FarmerDashboard() {
                           padding: "2px 7px",
                           borderRadius: "8px",
                           fontWeight: "500",
-                          background: p.badge === "Low" ? "#fee2e2" : "#d1fae5",
-                          color: p.badge === "Low" ? "#991b1b" : "#065f46",
+                          background: p.date_added === "Low" ? "#fee2e2" : "#d1fae5",
+                          color: p.date_added === "Low" ? "#991b1b" : "#065f46",
                         }}
                       >
-                        {p.badge}
+                        {p.date_added}
                       </span>
                     </div>
                   ))}

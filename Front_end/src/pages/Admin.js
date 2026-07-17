@@ -363,7 +363,7 @@ function Admin() {
               <tbody>
                 {farmerInfo.map((farmer, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{farmer.user_name}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{farmer.user_name} {farmer.user_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{farmer.location_name}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{farmer.pcnt}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
@@ -421,7 +421,7 @@ function Admin() {
               <tbody>
                 {consumerInfo.map((consumer, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{consumer.user_name}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{consumer.user_name} {consumer.user_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{consumer.email}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{consumer.ocnt}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>

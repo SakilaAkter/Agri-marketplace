@@ -2,12 +2,35 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 function Orders() {
+   console.log("Orders component rendered");
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("orders") || "[]");
-    setOrders(stored);
-  }, []);
+useEffect(() => {
+    const fetchOrders = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch("http://localhost:3000/orderinfofarmer", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            console.log("Status:", response.status);
+
+            const data = await response.json();
+
+            console.log("Response:", data);
+
+            setOrders(data);
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+        }
+    };
+
+    fetchOrders();
+}, []);
 
   return (
     <div style={{ background: "#f7faf8", minHeight: "100vh" }}>

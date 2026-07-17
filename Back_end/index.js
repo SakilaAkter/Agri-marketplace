@@ -9,6 +9,8 @@ const adminp = require("./routes/admin.js")
 const tstatus = require("./routes/ban_unban.js")
 const cart = require("./routes/add_to_cart.js")
 const hero = require("./routes/hero.js")
+const fdb = require("./routes/farmer_db.js")
+const createproducts = require("./routes/createproduct.js")
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use("/", adminp);
 app.use("/", tstatus);
 app.use("/", cart);
 app.use("/", hero);
+app.use("/", fdb);
+app.use("/", createproducts);
 
 connectDB();
 

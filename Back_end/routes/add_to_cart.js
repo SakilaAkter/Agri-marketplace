@@ -34,10 +34,12 @@ router.put("/cart", authMiddleware, authRole(2), async (req, res) => {
                 [item.id]
             );
             const product = prodD[0];
+            const disc = -1;
+            if(item.qty >= product.discount_for_percent) disc = product.discount_amount;
             await db.execute(
                 `insert into order_item(order_id, product_id, quantity, current_price, discount_percentage)
                 values (?, ?, ?, ?, ?)`,
-                [orderId, item.id, item.qty, product.price, product.discount_amount]
+                [orderId, item.id, item.qty, product.price, disc]
             );
             const remaining = product.quantity - item.qty;
             await db.execute(

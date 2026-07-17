@@ -1,69 +1,146 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
-const categories = ["Vegetables", "Fruits", "Grains", "Spices"];
-const locations = ["Dhaka", "Chittagong", "Rajshahi", "Khulna"];
 
 function CreateProduct() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
+  const [categories, setCategories] = useState([]);
+  const [categoryMember, setCategoryMember] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [error, setError] = useState("");
 
-    category: "Vegetables",
-    location: "Dhaka",
-    stock: 10,
-    price: 0,
-    description: "",
+  useEffect(() => {
+    const fetchCat = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/categories");
+        const data = await res.json();
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCat();
+  }, []);
+
+  useEffect(() => {
+    const fetchCat = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/categorymember");
+        const data = await res.json();
+        setCategoryMember(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCat();
+  }, []);
+
+  useEffect(() => {
+    const fetchCat = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/unity");
+        const data = await res.json();
+        setUnits(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCat();
+  }, []);
+
+  const [form, setForm] = useState({
+      product_name: "",
+      category_id: "1",
+      category_member_id: "",                         ///
+      unit_id: "1",
+      quantity: "1",
+      price: "1",
+      min_sell_amount: "1",
+      discount_amount: "",
+      discount_for_percent: "",
+      description: ""
   });
   const [saved, setSaved] = useState(false);
 
   const suggestion = useMemo(() => {
     const base = form.price || 0;
-    const stockBonus = form.stock > 50 ? -2 : form.stock < 10 ? 3 : 0;
+    const stockBonus = form.quantity > 50 ? -2 : form.quantity < 10 ? 3 : 0;
     const categoryAdj =
-      form.category === "Fruits" ? 5 : form.category === "Spices" ? 8 : 0;
-    const locationPref = form.location === "Dhaka" ? 2 : 0;
+      form.category_id === "Fruits" ? 5 : form.category_id === "Spices" ? 8 : 0;
+    const locationPref = "Dhaka" === "Dhaka" ? 2 : 0;
     const suggested = Math.max(
       5,
       Math.round(base + stockBonus + categoryAdj + locationPref),
     );
     return `${suggested} Tk/kg`;
-  }, [form.price, form.stock, form.category, form.location]);
+  }, [form.price, form.quantity, form.category_id, "Dhaka"]);
 
-  const handleChange = (key) => (e) => {
-    const value =
-      key === "stock" || key === "price"
-        ? Number(e.target.value)
-        : e.target.value;
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+  const memberIds = categoryMember
+  .filter((loc) => loc.M_category_id == form.category_id)
+  .map((loc) => loc.M_id);
+  form.category_member_id = memberIds[0];
+    const handleChange = (key) => (e) => {
+        console.log(key);
+        setForm((prev) => ({
+            ...prev,
+            [key]: e.target.value,
+        }));
+    }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const products = JSON.parse(localStorage.getItem("farmerProducts") || "[]");
-    const newProduct = {
-      id: Date.now(),
-      ...form,
-      price: Number(form.price),
-      stock: Number(form.stock),
-      suggestedPrice: suggestion,
-    };
-    localStorage.setItem(
+    console.log("in handlesubmit");
+            localStorage.setItem(
       "farmerProducts",
-      JSON.stringify([newProduct, ...products]),
+      JSON.stringify(form),
     );
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    setForm({
-      name: "",
-      category: "Vegetables",
-      location: "Dhaka",
-      stock: 10,
-      price: 0,
-      description: "",
+        console.log(form);
+    if (!form.product_name || !form.unit_id || !form.category_id || !form.min_sell_amount || !form.category_member_id || !form.quantity || !form.price) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if((!form.discount_amount && form.discount_for_percent) || (form.discount_amount && !form.discount_for_percent)){
+      setError("Please fill in all fields2.");
+      return;      
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/addproduct", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Addition Failed");
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      setForm({
+      product_name: "",
+      category_id: "1",
+      category_member_id: "",                         ///
+      unit_id: "1",
+      quantity: "1",
+      price: "1",
+      min_sell_amount: "1",
+      discount_amount: "",
+      discount_for_percent: "",
+      description: ""
     });
+    } catch {
+      setError("Server error. Please try again.");
+    }
   };
 
   return (
@@ -100,8 +177,8 @@ function CreateProduct() {
                   Product name
                 </label>
                 <input
-                  value={form.name}
-                  onChange={handleChange("name")}
+                  value={form.product_name}
+                  onChange={handleChange("product_name")}                                  //what the heck is this name??
                   placeholder="e.g. Fresh tomato"
                   style={{
                     width: "100%",
@@ -129,8 +206,8 @@ function CreateProduct() {
                     Category
                   </label>
                   <select
-                    value={form.category}
-                    onChange={handleChange("category")}
+                    value={form.category_id}
+                    onChange={handleChange("category_id")}
                     style={{
                       width: "100%",
                       padding: "12px",
@@ -138,9 +215,12 @@ function CreateProduct() {
                       border: "1px solid #cbd5e0",
                     }}
                   >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
+                      {categories.map((loc) => (
+                      <option
+                        key={loc.category_id}
+                        value={loc.category_id}
+                      >
+                        {loc.category_name}
                       </option>
                     ))}
                   </select>
@@ -153,26 +233,27 @@ function CreateProduct() {
                       color: "#4a5568",
                     }}
                   >
-                    Location
+                    Species
                   </label>
                   <select
-                    value={form.location}
-                    onChange={handleChange("location")}
+                    value={form.category_member_id}
+                    onChange={handleChange("category_member_id")}
                     style={{
                       width: "100%",
-                      padding: "12px",
+                      padding: "12px", 
                       borderRadius: "12px",
                       border: "1px solid #cbd5e0",
                     }}
                   >
-                    {locations.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc}
+                    {categoryMember.filter((loc) => loc.M_category_id == form.category_id).map((loc) => (
+                      <option key={loc.M_id} value={loc.M_id}>
+                        {loc.M_name}
                       </option>
                     ))}
                   </select>
                 </div>
-              </div>
+                </div>
+
 
               <div
                 style={{
@@ -189,13 +270,14 @@ function CreateProduct() {
                       color: "#4a5568",
                     }}
                   >
-                    Stock (kg)
+                    Stock
                   </label>
                   <input
-                    type="number"
-                    min="1"
-                    value={form.stock}
-                    onChange={handleChange("stock")}
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                    value={form.quantity}
+                    onChange={handleChange("quantity")}
                     style={{
                       width: "100%",
                       padding: "12px",
@@ -212,11 +294,12 @@ function CreateProduct() {
                       color: "#4a5568",
                     }}
                   >
-                    Price (Tk/kg)
+                    Price (Tk/Unit)
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min="0.01"
+                    step="0.01"
                     value={form.price}
                     onChange={handleChange("price")}
                     style={{
@@ -227,7 +310,115 @@ function CreateProduct() {
                     }}
                   />
                 </div>
-              </div>
+                </div>
+
+
+              <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#4a5568",
+                    }}
+                  >
+                    Minimum Quantity
+                  </label>
+                  <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                    value={form.min_sell_amount}
+                    onChange={handleChange("min_sell_amount")}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e0",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#4a5568",
+                    }}
+                  >
+                    Unit
+                  </label>
+                  <select
+                    value={form.unit_id}          
+                    onChange={handleChange("unit_id")}
+                    style={{
+                      width: "100%",
+                      padding: "12px", 
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e0",
+                    }}
+                  >
+                    {units.map((loc) => (
+                      <option key={loc.unit_id} value={loc.unit_id}>
+                        {loc.unit_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+
+
+              
+              <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#4a5568",
+                    }}
+                  >
+                    Discount For
+                  </label>
+                  <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                    value={form.discount_amount}
+                    onChange={handleChange("discount_amount")}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e0",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#4a5568",
+                    }}
+                  >
+                    Discount Amount (Tk/Unit)
+                  </label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={form.discount_for_percent}
+                    onChange={handleChange("discount_for_percent")}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e0",
+                    }}
+                  />
+                </div>
+                
+
+
 
               <div>
                 <label
@@ -278,6 +469,7 @@ function CreateProduct() {
                 </div>
                 <button
                   type="submit"
+                  /*onClick = {handleSubmit}*/
                   style={{
                     padding: "14px 22px",
                     borderRadius: "12px",
@@ -288,9 +480,15 @@ function CreateProduct() {
                     fontWeight: "600",
                   }}
                 >
-                  Save product
+                  Add product
                 </button>
               </div>
+
+              {error && (
+    <div style={{ color: "red", backgroundColor: "#fee", padding: "12px", borderRadius: "8px", marginTop: "12px" }}>
+      {error}
+    </div>
+  )}
 
               {saved && (
                 <div style={{ color: "#2f855a", fontWeight: "600" }}>

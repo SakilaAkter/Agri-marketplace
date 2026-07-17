@@ -69,7 +69,7 @@ function Navbar() {
         </span>
 
         <span
-          onClick={() => navigate("/farmers")}
+          onClick={() => navigate("/farmer/dashboard")}
           style={{
             color: "#c8f0d8",
             fontSize: "13px",
