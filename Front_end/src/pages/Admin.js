@@ -301,7 +301,7 @@ function Admin() {
               <tbody>
                   {productInfo.slice(0, 5).map((product, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.product_name}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.product_name} {product.product_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.farmer_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.price}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
@@ -479,7 +479,7 @@ function Admin() {
               <tbody>
                 {productInfo.map((product, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.product_name}</td>
+                    <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.product_name} {product.product_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.farmer_id}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9", color: "#1a202c" }}>{product.price}</td>
                     <td style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>

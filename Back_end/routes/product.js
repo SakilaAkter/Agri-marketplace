@@ -42,10 +42,8 @@ router.get("/product", async (req, res) => {
             JOIN category_members
                 ON product.category_member_id = category_members.M_id
 
-            LEFT JOIN expired_product 
-                ON product.product_id = expired_product.product_id
-
             where product.status = 'active' and users_renamed_2.status = 'active'
+            and product.product_id not in (select product_id from expired_product)
 
             ORDER BY product.date_added
         `);

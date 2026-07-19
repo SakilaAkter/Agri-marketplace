@@ -6,15 +6,52 @@ function ManageProducts() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("farmerProducts") || "[]");
-    setProducts(stored);
-  }, []);
+  useEffect(() => {fetchProducts();}, []);
 
-  const handleRemove = (id) => {
-    const updated = products.filter((product) => product.id !== id);
-    setProducts(updated);
-    localStorage.setItem("farmerProducts", JSON.stringify(updated));
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/myproducts", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setProducts(data);
+      } else {
+        console.log(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemove = async (id) => {
+    if (!window.confirm("Remove this product?")) return;
+    try {
+      const response = await fetch(
+        `http://localhost:3000/expireproduct/${id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+      setProducts((prev) =>
+        prev.filter((p) => p.product_id !== id)
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Server Error");
+    }
   };
 
   return (
@@ -26,7 +63,7 @@ function ManageProducts() {
             Manage Products
           </h1>
           <div style={{ color: "#4a5568", marginTop: "8px" }}>
-            Edit or remove your farmer product listings.
+            Add or remove your farmer product listings.
           </div>
         </div>
 
@@ -63,7 +100,7 @@ function ManageProducts() {
           <div style={{ display: "grid", gap: "18px" }}>
             {products.map((product) => (
               <div
-                key={product.id}
+                key={product.product_id}
                 style={{
                   background: "white",
                   borderRadius: "16px",
@@ -89,11 +126,57 @@ function ManageProducts() {
                         color: "#1a202c",
                       }}
                     >
-                      {product.name}
+                      {product.product_name}
                     </div>
-                    <div style={{ color: "#718096", fontSize: "13px" }}>
-                      {product.category} · {product.location}
-                    </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                      marginTop: "6px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ color: "#718096", fontSize: "13px" }}>
+                      {product.M_name}
+                    </span>
+
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: "999px",
+                        fontSize: "12px",
+                        background:
+                          product.status === "active"
+                            ? "#dcfce7"
+                            : "#fee2e2",
+                        color:
+                          product.status === "active"
+                            ? "#166534"
+                            : "#991b1b",
+                      }}
+                    >
+                      {product.status}
+                    </span>
+
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: "999px",
+                        fontSize: "12px",
+                        background:
+                          product.expired_on
+                            ? "#fef3c7"
+                            : "#dcfce7",
+                        color:
+                          product.expired_on
+                            ? "#92400e"
+                            : "#166534",
+                      }}
+                    >
+                      {product.expired_on ? "Removed" : "Available"}
+                    </span>
+                  </div>
                   </div>
                   <div
                     style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
@@ -108,20 +191,27 @@ function ManageProducts() {
                         cursor: "pointer",
                       }}
                     >
-                      Edit
+                      Add
                     </button>
                     <button
-                      onClick={() => handleRemove(product.id)}
+                      disabled={!!product.expired_on}
+                      onClick={() => handleRemove(product.product_id)}
                       style={{
                         padding: "10px 14px",
                         borderRadius: "10px",
                         border: "1px solid #fcbfbd",
-                        background: "#fef2f2",
-                        color: "#991b1b",
-                        cursor: "pointer",
+                        background: product.expired_on
+                          ? "#edf2f7"
+                          : "#fef2f2",
+                        color: product.expired_on
+                          ? "#718096"
+                          : "#991b1b",
+                        cursor: product.expired_on
+                          ? "not-allowed"
+                          : "pointer",
                       }}
                     >
-                      Remove
+                      {product.expired_on ? "Removed" : "Remove"}
                     </button>
                   </div>
                 </div>
@@ -136,22 +226,41 @@ function ManageProducts() {
                     <div style={{ fontSize: "12px", marginBottom: "6px" }}>
                       Stock
                     </div>
-                    <div style={{ fontWeight: "700" }}>{product.stock} kg</div>
+                    <div style={{ fontWeight: "700" }}>{product.quantity} {product.unit_name}</div>
                   </div>
                   <div style={{ color: "#4a5568" }}>
                     <div style={{ fontSize: "12px", marginBottom: "6px" }}>
                       Price
                     </div>
                     <div style={{ fontWeight: "700" }}>
-                      {product.price} Tk/kg
+                      ৳{product.price} / {product.unit_name}
                     </div>
                   </div>
                   <div style={{ color: "#4a5568" }}>
-                    <div style={{ fontSize: "12px", marginBottom: "6px" }}>
-                      Suggested
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Min Sell
                     </div>
+
+                      {product.expired_on && (
+                        <div
+                          style={{
+                            color: "#718096",
+                            fontSize: "13px",
+                            marginTop: "8px",
+                          }}
+                        >
+                          Removed on{" "}
+                          {new Date(product.expired_on).toLocaleString()}
+                        </div>
+                      )}
+
                     <div style={{ fontWeight: "700" }}>
-                      {product.suggestedPrice}
+                      {product.min_sell_amount} {product.unit_name}
                     </div>
                   </div>
                 </div>

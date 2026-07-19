@@ -3,41 +3,116 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 function CustomDeal() {
+  const [products, setProducts] = useState([]);
+
   const [form, setForm] = useState({
-    productName: "",
-    quantity: "",
-    preferredPrice: "",
-    deliveryDate: "",
-    note: "",
+    product_id: "",
+    agreed_price: "",
+    quantity_per_day: "",
+    start_date: "",
+    end_date: "",
   });
-  const [requests, setRequests] = useState([]);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [requests, setRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
 
-  useEffect(() => {
-    setRequests(JSON.parse(localStorage.getItem("customDeals") || "[]"));
-  }, []);
+  useEffect(() => {fetchProducts(); fetchRequests();}, []);
 
-  const handleSubmit = (e) => {
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:3000/customdeal/products",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      setLoadingRequests(true);
+      const response = await fetch(
+        "http://localhost:3000/customdeal",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setRequests(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const handleChange = (key) => (e) => {
+    const value = e.target.value;
+
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+
+    if (key === "product_id") {
+      const product = products.find(
+        (p) => p.product_id == value
+      );
+      setSelectedProduct(product);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitted(false);
 
-    const newRequest = {
-      id: Date.now(),
-      ...form,
-      status: "Pending",
-      createdAt: new Date().toLocaleString(),
-    };
+    try {
+      const response = await fetch(
+        "http://localhost:3000/customdeal",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(form),
+        }
+      );
 
-    const updated = [newRequest, ...requests];
-    setRequests(updated);
-    localStorage.setItem("customDeals", JSON.stringify(updated));
-    setSubmitted(true);
-    setForm({
-      productName: "",
-      quantity: "",
-      preferredPrice: "",
-      deliveryDate: "",
-      note: "",
-    });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+      setSubmitted(true);
+      setForm({
+        product_id: "",
+        agreed_price: "",
+        quantity_per_day: "",
+        start_date: "",
+        end_date: "",
+      });
+      setSelectedProduct(null);
+      fetchRequests();
+    } catch (err) {
+      console.error(err);
+      setError("Server Error");
+    }
   };
 
   return (
@@ -70,49 +145,86 @@ function CustomDeal() {
               border: "1px solid #e2e8f0",
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Request a custom deal</h3>
+            <h3 style={{ marginTop: 0 }}>Request a Custom Deal</h3>
+
             <div style={{ display: "grid", gap: "12px" }}>
+
+              <select
+                required
+                value={form.product_id}
+                onChange={handleChange("product_id")}
+                style={inputStyle}
+              >
+                <option value="">Select Product</option>
+
+                {products.map((product) => (
+                  <option
+                    key={product.product_id}
+                    value={product.product_id}
+                  >
+                    {product.product_name}
+                  </option>
+                ))}
+              </select>
+
+              {selectedProduct && (
+                <>
+                  <div
+                    style={{
+                      background: "#f8fafc",
+                      borderRadius: "10px",
+                      padding: "12px",
+                    }}
+                  >
+                    <b>Farmer:</b> {selectedProduct.farmer_name}
+                    <br />
+                    <b>Current Price:</b> ৳{selectedProduct.price}/
+                    {selectedProduct.unit_name}
+                    <br />
+                    <b>Available:</b> {selectedProduct.quantity}{" "}
+                    {selectedProduct.unit_name}
+                  </div>
+                </>
+              )}
+
               <input
                 required
-                value={form.productName}
-                onChange={(e) =>
-                  setForm({ ...form, productName: e.target.value })
-                }
-                placeholder="Product name"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.agreed_price}
+                onChange={handleChange("agreed_price")}
+                placeholder="Your Offer Price"
                 style={inputStyle}
               />
+
               <input
                 required
-                value={form.quantity}
-                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                placeholder="Quantity needed"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.quantity_per_day}
+                onChange={handleChange("quantity_per_day")}
+                placeholder="Quantity Per Day"
                 style={inputStyle}
               />
+
               <input
                 required
-                value={form.preferredPrice}
-                onChange={(e) =>
-                  setForm({ ...form, preferredPrice: e.target.value })
-                }
-                placeholder="Preferred price"
-                style={inputStyle}
-              />
-              <input
                 type="date"
-                value={form.deliveryDate}
-                onChange={(e) =>
-                  setForm({ ...form, deliveryDate: e.target.value })
-                }
+                value={form.start_date}
+                onChange={handleChange("start_date")}
                 style={inputStyle}
               />
-              <textarea
+
+              <input
                 required
-                value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-                placeholder="Describe your request"
-                rows="4"
-                style={{ ...inputStyle, resize: "vertical" }}
+                type="date"
+                value={form.end_date}
+                onChange={handleChange("end_date")}
+                style={inputStyle}
               />
+
               <button
                 type="submit"
                 style={{
@@ -127,9 +239,16 @@ function CustomDeal() {
               >
                 Send Request
               </button>
+
               {submitted && (
-                <div style={{ color: "#2f855a", fontSize: "14px" }}>
-                  Your request has been sent successfully.
+                <div style={{ color: "#2f855a" }}>
+                  Custom deal request submitted successfully.
+                </div>
+              )}
+
+              {error && (
+                <div style={{ color: "red" }}>
+                  {error}
                 </div>
               )}
             </div>
@@ -143,40 +262,120 @@ function CustomDeal() {
               border: "1px solid #e2e8f0",
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Recent requests</h3>
-            {requests.length === 0 ? (
-              <p style={{ color: "#4a5568" }}>No custom deals yet.</p>
+            <h3 style={{ marginTop: 0 }}>My Custom Deals</h3>
+
+            {loadingRequests ? (
+              <p>Loading...</p>
+            ) : requests.length === 0 ? (
+              <p style={{ color: "#4a5568" }}>
+                No custom deal requests yet.
+              </p>
             ) : (
-              <div style={{ display: "grid", gap: "10px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: "12px",
+                }}
+              >
                 {requests.map((request) => (
                   <div
-                    key={request.id}
+                    key={request.deal_id}
                     style={{
                       background: "#f8fafc",
                       borderRadius: "10px",
-                      padding: "12px",
+                      padding: "14px",
+                      border: "1px solid #e2e8f0",
                     }}
                   >
-                    <div style={{ fontWeight: "700", color: "#1a202c" }}>
-                      {request.productName}
-                    </div>
                     <div
                       style={{
-                        fontSize: "13px",
+                        fontWeight: "700",
+                        fontSize: "16px",
+                        color: "#1a202c",
+                      }}
+                    >
+                      {request.product_name}
+                    </div>
+
+                    <div
+                      style={{
+                        color: "#4a5568",
+                        marginTop: "6px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      <b>Farmer:</b> {request.farmer_name}
+                    </div>
+
+                    <div
+                      style={{
                         color: "#4a5568",
                         marginTop: "4px",
+                        fontSize: "14px",
                       }}
                     >
-                      Qty: {request.quantity} • Price: {request.preferredPrice}
+                      <b>Current Price:</b> ৳{request.current_price}
                     </div>
+
                     <div
                       style={{
-                        fontSize: "12px",
-                        color: "#718096",
+                        color: "#4a5568",
                         marginTop: "4px",
+                        fontSize: "14px",
                       }}
                     >
-                      {request.status} • {request.createdAt}
+                      <b>Your Offer:</b> ৳{request.agreed_price}
+                    </div>
+
+                    <div
+                      style={{
+                        color: "#4a5568",
+                        marginTop: "4px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      <b>Quantity / Day:</b> {request.quantity_per_day}
+                    </div>
+
+                    <div
+                      style={{
+                        color: "#4a5568",
+                        marginTop: "4px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      <b>Duration:</b>{" "}
+                      {request.start_date?.substring(0, 10)} →{" "}
+                      {request.end_date?.substring(0, 10)}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "10px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          background:
+                            request.status === "Pending"
+                              ? "#fef3c7"
+                              : request.status === "Accepted"
+                              ? "#dcfce7"
+                              : "#fee2e2",
+                          color:
+                            request.status === "Pending"
+                              ? "#92400e"
+                              : request.status === "Accepted"
+                              ? "#166534"
+                              : "#991b1b",
+                        }}
+                      >
+                        {request.status}
+                      </span>
                     </div>
                   </div>
                 ))}

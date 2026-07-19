@@ -126,7 +126,9 @@ router.get("/myproducts", authMiddleware, authorizeRole(1), async (req, res) => 
         const farmerId = req.user.id;
 
         const [rows] = await db.execute(
-            `SELECT * from product join category_members on m_id = category_member_id join unit on product.unit_id = unit.unit_id where farmer_id = ? 
+            `SELECT * from product join category_members on m_id = category_member_id join unit on product.unit_id = unit.unit_id 
+            left join expired_product 
+                ON product.product_id = expired_product.product_id where farmer_id = ? 
             order by date_added desc`,
             [farmerId]
         );
@@ -138,5 +140,61 @@ router.get("/myproducts", authMiddleware, authorizeRole(1), async (req, res) => 
         });
     }
 });
+
+
+router.post("/expireproduct/:id", authMiddleware, authorizeRole(1), async (req, res) => {
+        const db = getDB();
+        try {
+            const farmerId = req.user.id;
+            const productId = req.params.id;
+
+            const [product] = await db.execute(
+                `SELECT product_id
+                 FROM PRODUCT
+                 WHERE product_id = ?
+                 AND farmer_id = ?`,
+                [productId, farmerId]
+            );
+
+            if (product.length === 0) {
+                return res.status(404).json({
+                    message: "Product not found."
+                });
+            }
+
+            const [exists] = await db.execute(
+                `SELECT product_id
+                 FROM EXPIRED_PRODUCT
+                 WHERE product_id = ?`,
+                [productId]
+            );
+
+            if (exists.length > 0) {
+                return res.status(400).json({
+                    message: "Product already removed."
+                });
+            }
+
+            await db.execute(
+                `INSERT INTO EXPIRED_PRODUCT
+                (product_id, expired_on)
+                VALUES (?, now())`,
+                [productId]
+            );
+
+            res.json({
+                success: true,
+                message: "Product removed successfully."
+            });
+
+        } catch (err) {
+
+            console.error(err);
+            res.status(500).json({
+                message: "Server Error"
+            });
+        }
+    }
+);
 
 module.exports = router;

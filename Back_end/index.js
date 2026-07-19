@@ -11,6 +11,8 @@ const cart = require("./routes/add_to_cart.js")
 const hero = require("./routes/hero.js")
 const fdb = require("./routes/farmer_db.js")
 const createproducts = require("./routes/createproduct.js")
+const customdeal = require("./routes/customdeal.js")
+const reports = require("./routes/reports.js")
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use("/", cart);
 app.use("/", hero);
 app.use("/", fdb);
 app.use("/", createproducts);
+app.use("/", customdeal);
+app.use("/", reports);
 
 connectDB();
 

@@ -4,34 +4,71 @@ import Navbar from "../components/Navbar";
 
 function Report() {
   const [form, setForm] = useState({
-    type: "Product issue",
+    report_type: "Product issue",
     subject: "",
-    details: "",
-
-    orderId: "",
+    description: "",
+    order_id: "",
   });
+
   const [reports, setReports] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    setReports(JSON.parse(localStorage.getItem("reports") || "[]"));
-  }, []);
+  const fetchReports = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/report", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setReports(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {fetchReports();}, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(false);
+    setError("");
 
-    const newReport = {
-      id: Date.now(),
-      ...form,
-      status: "Submitted",
-      createdAt: new Date().toLocaleString(),
-    };
+    try {
+      const response = await fetch("http://localhost:3000/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          ...form,
+          order_id: form.order_id === "" ? null : form.order_id,
+        }),
+      });
 
-    const updated = [newReport, ...reports];
-    setReports(updated);
-    localStorage.setItem("reports", JSON.stringify(updated));
-    setSubmitted(true);
-    setForm({ type: "Product issue", subject: "", details: "", orderId: "" });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setSubmitted(true);
+      setForm({
+        report_type: "Product issue",
+        subject: "",
+        description: "",
+        order_id: "",
+      });
+
+      fetchReports();
+    } catch (err) {
+      console.error(err);
+      setError("Server Error");
+    }
   };
 
   return (
@@ -67,8 +104,8 @@ function Report() {
             <h3 style={{ marginTop: 0 }}>Submit a report</h3>
             <div style={{ display: "grid", gap: "12px" }}>
               <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                value={form.report_type}
+                onChange={(e) => setForm({ ...form, report_type: e.target.value })}
                 style={inputStyle}
               >
                 <option>Product issue</option>
@@ -85,18 +122,23 @@ function Report() {
                 style={inputStyle}
               />
               <input
-                value={form.orderId}
-                onChange={(e) => setForm({ ...form, orderId: e.target.value })}
+                value={form.order_id}
+                onChange={(e) => setForm({ ...form, order_id: e.target.value })}
                 placeholder="Order ID (optional)"
                 style={inputStyle}
               />
               <textarea
                 required
-                value={form.details}
-                onChange={(e) => setForm({ ...form, details: e.target.value })}
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 placeholder="Describe the issue"
                 rows="5"
-                style={{ ...inputStyle, resize: "vertical" }}
+                style={{
+                  ...inputStyle,
+                  resize: "vertical",
+                }}
               />
               <button
                 type="submit"
@@ -114,7 +156,13 @@ function Report() {
               </button>
               {submitted && (
                 <div style={{ color: "#2f855a", fontSize: "14px" }}>
-                  Your report has been submitted.
+                  Your report has been submitted successfully.
+                </div>
+              )}
+
+              {error && (
+                <div style={{ color: "#e53e3e", fontSize: "14px" }}>
+                  {error}
                 </div>
               )}
             </div>
@@ -130,21 +178,30 @@ function Report() {
           >
             <h3 style={{ marginTop: 0 }}>Previous reports</h3>
             {reports.length === 0 ? (
-              <p style={{ color: "#4a5568" }}>No reports submitted yet.</p>
+              <p style={{ color: "#4a5568" }}>
+                No reports submitted yet.
+              </p>
             ) : (
               <div style={{ display: "grid", gap: "10px" }}>
                 {reports.map((report) => (
                   <div
-                    key={report.id}
+                    key={report.report_id}
                     style={{
                       background: "#f8fafc",
                       borderRadius: "10px",
                       padding: "12px",
+                      border: "1px solid #e2e8f0",
                     }}
                   >
-                    <div style={{ fontWeight: "700", color: "#1a202c" }}>
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        color: "#1a202c",
+                      }}
+                    >
                       {report.subject}
                     </div>
+
                     <div
                       style={{
                         fontSize: "13px",
@@ -152,16 +209,40 @@ function Report() {
                         marginTop: "4px",
                       }}
                     >
-                      {report.type}
+                      {report.report_type}
                     </div>
+
+                    {report.order_id && (
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          color: "#4a5568",
+                          marginTop: "4px",
+                        }}
+                      >
+                        Order ID: {report.order_id}
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#4a5568",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {report.description}
+                    </div>
+
                     <div
                       style={{
                         fontSize: "12px",
                         color: "#718096",
-                        marginTop: "4px",
+                        marginTop: "8px",
                       }}
                     >
-                      {report.status} • {report.createdAt}
+                      {report.sta_tus} •{" "}
+                      {new Date(report.date).toLocaleString()}
                     </div>
                   </div>
                 ))}
